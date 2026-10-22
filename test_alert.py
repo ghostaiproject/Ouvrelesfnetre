@@ -26,9 +26,9 @@ def test_time_edges():
 
 
 def test_temp_edges():
-    assert evaluate(at(23), {**GOOD, "temp": 12})[0]
+    assert evaluate(at(23), {**GOOD, "temp": 15})[0]
     assert evaluate(at(23), {**GOOD, "temp": 22})[0]
-    assert not evaluate(at(23), {**GOOD, "temp": 11.9})[0]
+    assert not evaluate(at(23), {**GOOD, "temp": 14.9})[0]
     assert not evaluate(at(23), {**GOOD, "temp": 22.1})[0]
 
 

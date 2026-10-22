@@ -23,7 +23,7 @@ CONFIG = {
     "tz": "America/Toronto",
     "night_start": dtime(22, 0),   # inclusive
     "night_end": dtime(6, 0),      # exclusive
-    "temp_min": 12.0,              # C, inclusive
+    "temp_min": 15.0,              # C, inclusive (raise = fewer cold-night alerts)
     "temp_max": 22.0,              # C, inclusive
     "hum_min": 30.0,               # %, inclusive
     "hum_max": 65.0,               # %, inclusive
