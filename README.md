@@ -3,13 +3,19 @@
 Pings an Amazon Echo when it's a good night to open the windows
 (Sainte-Anne-des-Plaines, QC). Runs free on GitHub Actions every 15 min.
 
-## Rule (all must be true)
-- 08:00 to 20:00 Toronto time
+## Rule
+Opens (max ONE alert per day), when all true:
+- Weekdays: only at noon or 5pm (a 30 min slot each). Weekends: 8:00 to 20:00
 - Temp 15 to 22 C, humidity 30 to 65 %
-- Dew point under 15 C, no precipitation, wind under 30 km/h
+- Dew point under 15 C, no rain now or in the next ~2h, not dropping below 13 C, wind under 30 km/h
+- Optimal (18 C or warmer): the alert is also spoken, if Voice Monkey is set up
+
+Close reminder (only after that day's open alert, 7:00 to 23:00): rain now or likely
+in the next ~2h (50 %+), or temp now / next ~2h below 13 C.
 
 Numbers live in `CONFIG` at the top of `alert.py`.
-Alerts once on entry; re-arms after 2 bad checks in a row.
+MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or closing),
+`notify_me` (silent only), `announce` (spoken only).
 
 ## Setup (phone friendly)
 1. Repo > Settings > Secrets and variables > Actions > New secret:

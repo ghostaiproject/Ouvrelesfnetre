@@ -24,7 +24,7 @@ jobs:
       - run: pytest -q
       - name: Run alert
         env:
-          MODE: ${{ vars.MODE || 'notify_me' }}
+          MODE: ${{ vars.MODE || 'auto' }}
           VOICEMONKEY_CHIME: ${{ vars.VOICEMONKEY_CHIME }}
           DRY_RUN: "0"
           FORCE_TEST: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}

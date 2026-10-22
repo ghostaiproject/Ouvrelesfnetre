@@ -1,6 +1,6 @@
 {
-  "armed": true,
+  "day": "",
   "open": false,
-  "misses": 0,
+  "last_alert": "",
   "heartbeat": ""
 }

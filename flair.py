@@ -83,10 +83,18 @@ GENERAL = [
     ("Pane-less cooling", "Pane-free, pain-free, and totally free."),
 ]
 
-CLOSE_LINES = [
-    ("Pane-ful goodbye", "The perfect air is over. Close up to keep it in."),
-    ("Closing time", "Conditions changed. Time to close the windows."),
-]
+CLOSE_LINES = {
+    "rain": [
+        ("Pane in the forecast", "Rain is on the way. Close the windows!"),
+        ("Rain check on that breeze", "Rain incoming. Shut the windows."),
+        ("Don't rain on your own parade", "Close the windows before it pours."),
+    ],
+    "cold": [
+        ("Pane-ful chill", "It's getting cold out. Close the windows."),
+        ("Chill out, close up", "The temperature is dropping. Time to shut the windows."),
+        ("Cold front, hold the pane", "Close the windows to keep the warmth in."),
+    ],
+}
 
 
 def holiday_for(d: date):
@@ -98,10 +106,10 @@ def holiday_for(d: date):
     return None
 
 
-def build_message(d: date, w: dict, spoken: bool = False, rng=random, close=False):
+def build_message(d: date, w: dict, spoken: bool = False, rng=random, close=None):
     """Return (title, body). Themed lines near a holiday, otherwise a random pick."""
     if close:
-        title, joke = rng.choice(CLOSE_LINES)
+        title, joke = rng.choice(CLOSE_LINES.get(close) or CLOSE_LINES["cold"])
         return title, joke
     pool = LINES.get(holiday_for(d)) or GENERAL
     title, joke = rng.choice(pool)
