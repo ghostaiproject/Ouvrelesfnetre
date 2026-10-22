@@ -45,7 +45,7 @@ LINES = {
     ],
     "canadaday": [
         ("Open up, eh", "Perfect day for it. Very polite weather."),
-        ("Pane-adian night", "Happy Canada Day. Let the breeze in, sorry about the bugs."),
+        ("Pane-adian eh-ir", "Happy Canada Day. Let the breeze in, sorry about the bugs."),
     ],
     "thanksgiving": [
         ("Thankful for panes", "Be thankful, the weather delivered. Windows open, leftovers cold."),
