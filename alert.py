@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+from flair import build_message
+
 # ---------------------------------------------------------------- CONFIG ---
 CONFIG = {
     "lat": 45.76,
@@ -31,6 +33,8 @@ CONFIG = {
     "close_alert": False,          # also alert when conditions leave range
     "mode_default": "notify_me",   # "announce" (spoken) or "notify_me" (silent glow)
     "indoor_margin": 2.0,          # FUTURE HOOK: outside must be this much cooler than inside
+    "chime": "",                   # announce mode only: sound played before speech.
+                                   # Or set the VOICEMONKEY_CHIME env var / repo variable.
 }
 STATE_FILE = Path(__file__).parent / "state.json"
 API = "https://api.open-meteo.com/v1/forecast"
@@ -104,17 +108,21 @@ def fetch_weather(cfg=CONFIG) -> dict:
     raise RuntimeError(f"Open-Meteo failed after 3 tries: {last}")
 
 
-def send(mode: str, text: str):
+def send(mode: str, title: str, text: str):
     if mode == "announce":
-        r = requests.post(VM_URL, timeout=15, json={
+        payload = {
             "token": os.environ["VOICEMONKEY_TOKEN"],
             "device": os.environ["VOICEMONKEY_DEVICE"],
-            "speech": text,
-        })
+            "speech": f"{title}. {text}",
+        }
+        chime = os.environ.get("VOICEMONKEY_CHIME") or CONFIG["chime"]
+        if chime:
+            payload["chime"] = chime
+        r = requests.post(VM_URL, timeout=15, json=payload)
     elif mode == "notify_me":
         r = requests.get(NM_URL, timeout=15, params={
             "notification": text,
-            "title": "Windows",
+            "title": title,  # the title is what shows on the Echo itself
             "accessCode": os.environ["NOTIFYME_ACCESS_CODE"],
         })
     else:
@@ -139,13 +147,13 @@ def main() -> int:
         print(f"ERROR {e}. No alert sent.", file=sys.stderr)
         return 1
 
-    msg = (f"Good time to open the windows. Outside is {w['temp']:.0f} degrees, "
-           f"{w['humidity']:.0f} percent humidity, dew point {w['dew_point']:.0f}.")
+    spoken = mode == "announce"
+    title, msg = build_message(now.date(), w, spoken=spoken)
 
     if os.environ.get("FORCE_TEST") == "1":
-        print(f"FORCE_TEST mode={mode} msg={msg!r} dry={dry}")
+        print(f"FORCE_TEST mode={mode} title={title!r} msg={msg!r} dry={dry}")
         if not dry:
-            send(mode, msg)
+            send(mode, title, msg)
         return 0
 
     state = load_state()
@@ -162,9 +170,10 @@ def main() -> int:
         return 0
 
     if action == "open":
-        send(mode, msg)
+        send(mode, title, msg)
     elif action == "close":
-        send(mode, "Conditions changed. Time to close the windows.")
+        c_title, c_msg = build_message(now.date(), w, close=True)
+        send(mode, c_title, c_msg)
 
     today = now.strftime("%Y-%m-%d")
     if today != new.get("heartbeat"):

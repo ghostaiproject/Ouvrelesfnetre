@@ -39,6 +39,7 @@ jobs:
       - name: Run alert
         env:
           MODE: ${{ inputs.mode || vars.MODE || 'notify_me' }}
+          VOICEMONKEY_CHIME: ${{ vars.VOICEMONKEY_CHIME }}
           DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
           FORCE_TEST: ${{ (github.event_name == 'workflow_dispatch' && inputs.force_test) && '1' || '0' }}
           VOICEMONKEY_TOKEN: ${{ secrets.VOICEMONKEY_TOKEN }}
