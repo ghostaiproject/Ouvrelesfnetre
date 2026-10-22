@@ -23,3 +23,8 @@ Alerts once on entry; re-arms after 2 bad checks in a row.
 - Cron can run a few minutes late. Normal.
 - `state.json` is committed back about once a day, which also keeps the schedule from auto-disabling after 60 days idle.
 - Silent mode: Echo ring glows yellow; ask "Alexa, what are my notifications?"
+
+## Flair
+`flair.py` picks a themed title and joke (Halloween, Christmas, Saint-Jean, Canada Day, etc.), otherwise one matched to how cool the night is. Edit the lists in `flair.py` to add your own.
+- Silent mode: only the title shows on the Echo itself; the full joke and numbers are read out when you ask for notifications.
+- Custom sound: Notify Me always uses Amazon's default sound. In spoken mode (`announce`), set repo variable `VOICEMONKEY_CHIME` to a sound from Voice Monkey's sound picker.

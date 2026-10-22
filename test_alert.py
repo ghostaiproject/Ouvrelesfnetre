@@ -1,7 +1,10 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from datetime import date
+
 from alert import CONFIG, evaluate, in_night_window, next_state
+from flair import build_message, holiday_for
 
 TZ = ZoneInfo("America/Toronto")
 GOOD = {"temp": 17, "humidity": 50, "dew_point": 8, "precip": 0, "wind": 10}
@@ -62,3 +65,24 @@ def test_alert_once_then_rearm():
     assert s["armed"]
     s, a = next_state(s, True)
     assert a == "open"
+
+
+def test_holidays():
+    assert holiday_for(date(2026, 10, 31)) == "halloween"
+    assert holiday_for(date(2026, 10, 24)) == "halloween"
+    assert holiday_for(date(2026, 10, 22)) is None
+    assert holiday_for(date(2026, 10, 12)) == "thanksgiving"
+    assert holiday_for(date(2026, 12, 25)) == "christmas"
+    assert holiday_for(date(2027, 1, 1)) == "newyear"
+    assert holiday_for(date(2026, 6, 24)) == "stjean"
+
+
+def test_message_builds():
+    import random
+    t, b = build_message(date(2026, 10, 22), GOOD, rng=random.Random(1))
+    assert t and "17 C" in b
+    t, b = build_message(date(2026, 10, 22), GOOD, spoken=True)
+    assert "degrees" in b
+    t, b = build_message(date(2026, 10, 30), GOOD)
+    assert t
+    assert build_message(date(2026, 10, 22), GOOD, close=True)[0]
