@@ -16,8 +16,8 @@ Alerts once on entry; re-arms after 2 bad checks in a row.
    - Silent mode: `NOTIFYME_ACCESS_CODE` (Alexa app: enable the "Notify Me" skill, code arrives by email)
    - Spoken mode: `VOICEMONKEY_TOKEN` and `VOICEMONKEY_DEVICE` (voicemonkey.io: account, add a Speaker device, copy token and device ID)
 2. Optional: Variables tab > `MODE` = `announce` to make it spoken. Default is `notify_me`.
-3. Actions tab > window-alert > Run workflow with dry_run on, check the log.
-4. Run again with dry_run off + force_test on to hear/see a real alert.
+3. Actions tab > window-alert > Run workflow > Run workflow. That sends one test alert right now (no options to set).
+4. Green check = it worked. The Echo should glow yellow.
 
 ## Notes
 - Cron can run a few minutes late. Normal.

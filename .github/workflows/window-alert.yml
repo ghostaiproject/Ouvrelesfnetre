@@ -3,21 +3,7 @@ name: window-alert
 on:
   schedule:
     - cron: "7,22,37,52 * * * *"   # every 15 min, off the :00 rush
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Print decision only, send nothing"
-        type: boolean
-        default: true
-      force_test:
-        description: "Send a test alert, ignore conditions"
-        type: boolean
-        default: false
-      mode:
-        description: "announce (spoken) or notify_me (silent)"
-        type: choice
-        options: [notify_me, announce]
-        default: notify_me
+  workflow_dispatch:   # tapping "Run workflow" = send ONE test alert now, no options
 
 permissions:
   contents: write
@@ -38,10 +24,10 @@ jobs:
       - run: pytest -q
       - name: Run alert
         env:
-          MODE: ${{ inputs.mode || vars.MODE || 'notify_me' }}
+          MODE: ${{ vars.MODE || 'notify_me' }}
           VOICEMONKEY_CHIME: ${{ vars.VOICEMONKEY_CHIME }}
-          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
-          FORCE_TEST: ${{ (github.event_name == 'workflow_dispatch' && inputs.force_test) && '1' || '0' }}
+          DRY_RUN: "0"
+          FORCE_TEST: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
           VOICEMONKEY_TOKEN: ${{ secrets.VOICEMONKEY_TOKEN }}
           VOICEMONKEY_DEVICE: ${{ secrets.VOICEMONKEY_DEVICE }}
           NOTIFYME_ACCESS_CODE: ${{ secrets.NOTIFYME_ACCESS_CODE }}
