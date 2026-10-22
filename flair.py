@@ -63,23 +63,18 @@ LINES = {
     ],
 }
 
-GENERAL = {
-    "cool": [
-        ("Crisp night, open up", "Your apartment has been begging for this."),
-        ("Cold front, free AC", "Nature's air conditioning, no bill."),
-        ("Chill mode available", "Cooling the top floor the free way."),
-    ],
-    "mild": [
-        ("Perfect window weather", "Goldilocks night: not too hot, not too cold."),
-        ("Breeze o'clock", "Top floor heat meets its match tonight."),
-        ("Window time, champ", "Open them up and let the heat escape."),
-    ],
-    "warm": [
-        ("Warm night, smart move", "It's still warm, but cooler than your apartment. Probably."),
-        ("Heat escape hatch", "The top floor sauna can finally vent."),
-        ("Windows: engage", "Not frosty, but fresh. Take the win."),
-    ],
-}
+GENERAL = [
+    ("Perfect window weather", "Goldilocks night: not too hot, not too cold."),
+    ("Breeze o'clock", "Top floor heat meets its match tonight."),
+    ("Window time, champ", "Open them up and let the heat escape."),
+    ("Free AC unlocked", "Nature's air conditioning, no bill."),
+    ("Heat escape hatch", "The top floor sauna can finally vent."),
+    ("Windows: engage", "Fresh air beats a fan. Take the win."),
+    ("Your apartment called", "It wants some fresh air. Answer it."),
+    ("Open sesame", "The magic word for your windows tonight."),
+    ("Air swap time", "Out with the stale, in with the fresh."),
+    ("Night shift breeze", "The air is on duty. Let it in."),
+]
 
 CLOSE_LINES = [
     ("Close the windows", "The perfect air is over. Shut them to keep the good air in."),
@@ -96,20 +91,12 @@ def holiday_for(d: date):
     return None
 
 
-def temp_band(temp: float) -> str:
-    if temp <= 14:
-        return "cool"
-    if temp >= 19:
-        return "warm"
-    return "mild"
-
-
 def build_message(d: date, w: dict, spoken: bool = False, rng=random, close=False):
-    """Return (title, body). Holiday pool wins when a holiday is near."""
+    """Return (title, body). Themed lines near a holiday, otherwise a random pick."""
     if close:
         title, joke = rng.choice(CLOSE_LINES)
         return title, joke
-    pool = LINES.get(holiday_for(d)) or GENERAL[temp_band(w["temp"])]
+    pool = LINES.get(holiday_for(d)) or GENERAL
     title, joke = rng.choice(pool)
     unit = "degrees" if spoken else "C"
     stats = (f"{w['temp']:.0f} {unit} outside, {w['humidity']:.0f} percent humidity, "
