@@ -21,8 +21,8 @@ CONFIG = {
     "lat": 45.76,
     "lon": -73.82,
     "tz": "America/Toronto",
-    "night_start": dtime(22, 0),   # inclusive
-    "night_end": dtime(6, 0),      # exclusive
+    "night_start": dtime(8, 0),    # inclusive (alert window start)
+    "night_end": dtime(20, 0),     # exclusive (alert window end)
     "temp_min": 15.0,              # C, inclusive (raise = fewer cold-night alerts)
     "temp_max": 22.0,              # C, inclusive
     "hum_min": 30.0,               # %, inclusive

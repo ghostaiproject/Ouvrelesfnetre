@@ -4,7 +4,7 @@ Pings an Amazon Echo when it's a good night to open the windows
 (Sainte-Anne-des-Plaines, QC). Runs free on GitHub Actions every 15 min.
 
 ## Rule (all must be true)
-- 22:00 to 06:00 Toronto time
+- 08:00 to 20:00 Toronto time
 - Temp 15 to 22 C, humidity 30 to 65 %
 - Dew point under 15 C, no precipitation, wind under 30 km/h
 
