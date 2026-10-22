@@ -15,39 +15,39 @@ def at(h, m=0):
 
 
 def test_good_night_passes():
-    assert evaluate(at(23), GOOD)[0]
+    assert evaluate(at(12), GOOD)[0]
 
 
 def test_time_edges():
-    assert in_night_window(at(22, 0))
-    assert not in_night_window(at(21, 59))
-    assert in_night_window(at(5, 59))
-    assert not in_night_window(at(6, 0))
+    assert in_night_window(at(8, 0))
+    assert not in_night_window(at(7, 59))
+    assert in_night_window(at(19, 59))
+    assert not in_night_window(at(20, 0))
 
 
 def test_temp_edges():
-    assert evaluate(at(23), {**GOOD, "temp": 15})[0]
-    assert evaluate(at(23), {**GOOD, "temp": 22})[0]
-    assert not evaluate(at(23), {**GOOD, "temp": 14.9})[0]
-    assert not evaluate(at(23), {**GOOD, "temp": 22.1})[0]
+    assert evaluate(at(12), {**GOOD, "temp": 15})[0]
+    assert evaluate(at(12), {**GOOD, "temp": 22})[0]
+    assert not evaluate(at(12), {**GOOD, "temp": 14.9})[0]
+    assert not evaluate(at(12), {**GOOD, "temp": 22.1})[0]
 
 
 def test_humidity_edges():
-    assert evaluate(at(23), {**GOOD, "humidity": 65})[0]
-    assert evaluate(at(23), {**GOOD, "humidity": 30})[0]
-    assert not evaluate(at(23), {**GOOD, "humidity": 65.1})[0]
-    assert not evaluate(at(23), {**GOOD, "humidity": 29.9})[0]
+    assert evaluate(at(12), {**GOOD, "humidity": 65})[0]
+    assert evaluate(at(12), {**GOOD, "humidity": 30})[0]
+    assert not evaluate(at(12), {**GOOD, "humidity": 65.1})[0]
+    assert not evaluate(at(12), {**GOOD, "humidity": 29.9})[0]
 
 
 def test_dew_precip_wind():
-    assert not evaluate(at(23), {**GOOD, "dew_point": 15})[0]
-    assert not evaluate(at(23), {**GOOD, "precip": 0.1})[0]
-    assert not evaluate(at(23), {**GOOD, "wind": 30})[0]
+    assert not evaluate(at(12), {**GOOD, "dew_point": 15})[0]
+    assert not evaluate(at(12), {**GOOD, "precip": 0.1})[0]
+    assert not evaluate(at(12), {**GOOD, "wind": 30})[0]
 
 
 def test_indoor_hook():
-    assert evaluate(at(23), GOOD, indoor_temp=20)[0]
-    assert not evaluate(at(23), GOOD, indoor_temp=18)[0]
+    assert evaluate(at(12), GOOD, indoor_temp=20)[0]
+    assert not evaluate(at(12), GOOD, indoor_temp=18)[0]
 
 
 def test_alert_once_then_rearm():
