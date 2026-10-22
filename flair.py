@@ -29,56 +29,59 @@ HOLIDAYS = [
 
 LINES = {
     "newyear": [
-        ("New Year, new breeze", "Fresh year, fresh air. Crack those windows."),
-        ("Cheers to cool air", "Resolution number one: open the windows."),
+        ("New year, new pane", "Fresh year, fresh air. Crack those windows."),
+        ("Resolution, open up", "Resolution number one: open the windows."),
     ],
     "valentine": [
         ("Windows, my valentine", "The night air has a crush on your apartment."),
-        ("Love is in the air", "Literally. Let it in."),
+        ("Pane-ing for you", "Love is in the air. Literally. Let it in."),
     ],
     "stpatrick": [
-        ("Luck of the breeze", "Lucky night. The air is perfect, no pot of gold needed."),
+        ("Luck of the pane", "Lucky night. The air is perfect, no pot of gold needed."),
     ],
     "stjean": [
-        ("Bonne Saint-Jean", "Fete nationale vibes. Open up and let the night in."),
-        ("Vive le Quebec, vive le vent", "Good night to open up and enjoy the breeze."),
+        ("Saint-Jean pane party", "Fete nationale vibes. Open up and let the night in."),
+        ("Pane-triotic breeze", "Vive le Quebec. Good night to open up and enjoy the air."),
     ],
     "canadaday": [
-        ("Happy Canada Day", "Perfect night to open up. Very polite weather, eh."),
+        ("Open up, eh", "Perfect night for it. Very polite weather."),
+        ("Pane-adian night", "Happy Canada Day. Let the breeze in, sorry about the bugs."),
     ],
     "thanksgiving": [
-        ("Thankful for cool air", "Be thankful, the weather delivered. Windows open, leftovers cold."),
+        ("Thankful for panes", "Be thankful, the weather delivered. Windows open, leftovers cold."),
+        ("Gobble up the breeze", "Fresh air is the best side dish."),
     ],
     "halloween": [
-        ("Spooky season breeze", "The night is whispering. Open a window, if you dare."),
-        ("Boo! It's window time", "Ghosts need ventilation too."),
-        ("Fresh air, fright night", "Perfect crisp night. Just don't invite anything in."),
+        ("Window of fright", "The night is whispering. Open a window, if you dare."),
+        ("Pane-ic! Open up", "Ghosts need ventilation too."),
+        ("Boo-tiful breeze", "Perfect night for it. Just don't invite anything in."),
     ],
     "christmas": [
-        ("Frosty fresh air", "Santa checked the forecast. Windows open, you're good."),
-        ("Jingle all the breeze", "Cool air is your free Christmas present."),
+        ("Frosted panes", "Santa checked the forecast. Windows open, you're good."),
+        ("Sleigh the heat", "Cool air is your free Christmas present."),
+        ("Santa's window of opportunity", "Open up before the elves get cold."),
     ],
     "nye": [
-        ("Last breeze of the year", "End the year with fresh air."),
+        ("Last pane of the year", "End the year with fresh air."),
     ],
 }
 
 GENERAL = [
-    ("Perfect window weather", "Goldilocks night: not too hot, not too cold."),
-    ("Breeze o'clock", "Top floor heat meets its match tonight."),
-    ("Window time, champ", "Open them up and let the heat escape."),
-    ("Free AC unlocked", "Nature's air conditioning, no bill."),
-    ("Heat escape hatch", "The top floor sauna can finally vent."),
-    ("Windows: engage", "Fresh air beats a fan. Take the win."),
-    ("Your apartment called", "It wants some fresh air. Answer it."),
-    ("Open sesame", "The magic word for your windows tonight."),
-    ("Air swap time", "Out with the stale, in with the fresh."),
-    ("Night shift breeze", "The air is on duty. Let it in."),
+    ("Pane relief", "Open up and let the heat escape."),
+    ("Window of opportunity", "Top floor heat meets its match tonight."),
+    ("Opening night", "The air is the star tonight. Let it in."),
+    ("Wind-ow time", "Fresh air is on the guest list."),
+    ("Sill waiting", "The breeze is right outside. Let it in."),
+    ("Don't pane, open up", "Free air conditioning, no bill."),
+    ("Frame the breeze", "Out with the stale, in with the fresh."),
+    ("Ledge-endary night", "The top floor sauna can finally vent."),
+    ("Glass half open", "Fresh air beats a fan. Take the win."),
+    ("Crack a window", "Just a crack is plenty tonight."),
 ]
 
 CLOSE_LINES = [
-    ("Close the windows", "The perfect air is over. Shut them to keep the good air in."),
-    ("Window curfew", "Conditions changed. Time to close up."),
+    ("Pane-ful goodbye", "The perfect air is over. Close up to keep it in."),
+    ("Closing time", "Conditions changed. Time to close the windows."),
 ]
 
 
