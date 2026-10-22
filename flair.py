@@ -33,18 +33,18 @@ LINES = {
         ("Resolution, open up", "Resolution number one: open the windows."),
     ],
     "valentine": [
-        ("Windows, my valentine", "The night air has a crush on your apartment."),
+        ("Windows, my valentine", "The fresh air has a crush on your apartment."),
         ("Pane-ing for you", "Love is in the air. Literally. Let it in."),
     ],
     "stpatrick": [
-        ("Luck of the pane", "Lucky night. The air is perfect, no pot of gold needed."),
+        ("Luck of the pane", "Lucky break. The air is perfect, no pot of gold needed."),
     ],
     "stjean": [
-        ("Saint-Jean pane party", "Fete nationale vibes. Open up and let the night in."),
-        ("Pane-triotic breeze", "Vive le Quebec. Good night to open up and enjoy the air."),
+        ("Saint-Jean pane party", "Fete nationale vibes. Open up and let the fresh air in."),
+        ("Pane-triotic breeze", "Vive le Quebec. Good time to open up and enjoy the air."),
     ],
     "canadaday": [
-        ("Open up, eh", "Perfect night for it. Very polite weather."),
+        ("Open up, eh", "Perfect day for it. Very polite weather."),
         ("Pane-adian night", "Happy Canada Day. Let the breeze in, sorry about the bugs."),
     ],
     "thanksgiving": [
@@ -52,9 +52,9 @@ LINES = {
         ("Gobble up the breeze", "Fresh air is the best side dish."),
     ],
     "halloween": [
-        ("Window of fright", "The night is whispering. Open a window, if you dare."),
+        ("Window of fright", "The wind is whispering. Open a window, if you dare."),
         ("Pane-ic! Open up", "Ghosts need ventilation too."),
-        ("Boo-tiful breeze", "Perfect night for it. Just don't invite anything in."),
+        ("Boo-tiful breeze", "Perfect weather for it. Just don't invite anything in."),
     ],
     "christmas": [
         ("Frosted panes", "Santa checked the forecast. Windows open, you're good."),
@@ -67,16 +67,20 @@ LINES = {
 }
 
 GENERAL = [
-    ("Pane relief", "Open up and let the heat escape."),
-    ("Window of opportunity", "Top floor heat meets its match tonight."),
-    ("Opening night", "The air is the star tonight. Let it in."),
-    ("Wind-ow time", "Fresh air is on the guest list."),
-    ("Sill waiting", "The breeze is right outside. Let it in."),
-    ("Don't pane, open up", "Free air conditioning, no bill."),
-    ("Frame the breeze", "Out with the stale, in with the fresh."),
-    ("Ledge-endary night", "The top floor sauna can finally vent."),
-    ("Glass half open", "Fresh air beats a fan. Take the win."),
-    ("Crack a window", "Just a crack is plenty tonight."),
+    ("Pane relief", "Open up and feel the glass-ful of fresh air."),
+    ("Window of opportunity", "Don't let this one slide. Windows slide, get it?"),
+    ("Open and shut case", "The case for fresh air is wide open."),
+    ("Wind-ow time", "A wind-ow of fresh air awaits."),
+    ("Sill waiting", "Why sit around being sill-y? Open up."),
+    ("Don't pane, open up", "It's easy. Just sash-ay on over to the window."),
+    ("Frame the breeze", "A frame-worthy day to let the air in."),
+    ("Ledge-endary air", "Today's breeze is ledge-endary. Open up."),
+    ("Glass half open", "The optimist's way to cool the place."),
+    ("Crack a window", "Crack it open. Crack a smile. Crack a pane joke."),
+    ("Latch on to this", "Unlatch it and let the fresh air in."),
+    ("Hinge-credible weather", "Hinge-credible air is waiting outside."),
+    ("Breeze through it", "Opening the window is a breeze."),
+    ("Pane-less cooling", "Pane-free, pain-free, and totally free."),
 ]
 
 CLOSE_LINES = [
