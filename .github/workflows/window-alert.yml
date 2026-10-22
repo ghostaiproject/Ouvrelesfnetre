@@ -1,0 +1,57 @@
+name: window-alert
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"   # every 15 min, off the :00 rush
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print decision only, send nothing"
+        type: boolean
+        default: true
+      force_test:
+        description: "Send a test alert, ignore conditions"
+        type: boolean
+        default: false
+      mode:
+        description: "announce (spoken) or notify_me (silent)"
+        type: choice
+        options: [notify_me, announce]
+        default: notify_me
+
+permissions:
+  contents: write
+
+concurrency:
+  group: window-alert
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pytest
+      - run: pytest -q
+      - name: Run alert
+        env:
+          MODE: ${{ inputs.mode || vars.MODE || 'notify_me' }}
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
+          FORCE_TEST: ${{ (github.event_name == 'workflow_dispatch' && inputs.force_test) && '1' || '0' }}
+          VOICEMONKEY_TOKEN: ${{ secrets.VOICEMONKEY_TOKEN }}
+          VOICEMONKEY_DEVICE: ${{ secrets.VOICEMONKEY_DEVICE }}
+          NOTIFYME_ACCESS_CODE: ${{ secrets.NOTIFYME_ACCESS_CODE }}
+        run: python alert.py
+      - name: Save state
+        run: |
+          if [ -n "$(git status --porcelain state.json)" ]; then
+            git config user.name "window-alert-bot"
+            git config user.email "bot@users.noreply.github.com"
+            git add state.json
+            git commit -m "state update"
+            git pull --rebase -q
+            git push
+          fi
