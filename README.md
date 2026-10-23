@@ -22,8 +22,20 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
    - Silent mode: `NOTIFYME_ACCESS_CODE` (Alexa app: enable the "Notify Me" skill, code arrives by email)
    - Spoken mode: `VOICEMONKEY_TOKEN` and `VOICEMONKEY_DEVICE` (voicemonkey.io: account, add a Speaker device, copy token and device ID)
 2. Optional: Variables tab > `MODE` = `announce` to make it spoken. Default is `notify_me`.
-3. Actions tab > window-alert > Run workflow > Run workflow. That sends one test alert right now (no options to set).
+3. Actions tab > window-alert > Run workflow > Run workflow. That sends one test alert right now (to your home only).
 4. Green check = it worked. The Echo should glow yellow.
+
+## Friends and family (other homes)
+This repo checks every home with its own local weather; friends never touch GitHub.
+1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (from `docs/index.html`;
+   turn on once at Settings > Pages > Deploy from branch `main`, folder `/docs`).
+   French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
+   and paste its code. The page gives them a message to send back to you.
+2. Their message has a secret name (like `HOME_MAMAN`) and a value. Repo > Settings > Secrets and
+   variables > Actions > New repository secret: paste the name, paste the value.
+3. Test it: Actions > window-alert > Run workflow, type their name (`maman`) in the home box. `all` tests every home.
+- To remove a home, delete its secret. A broken code is skipped (see the run log), the other homes keep working.
+- Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
 
 ## Notes
 - Cron can run a few minutes late. Normal.

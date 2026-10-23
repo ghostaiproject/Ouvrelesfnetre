@@ -3,8 +3,10 @@ reminds you to close them when it gets cold or rain is coming.
 
 Runs from GitHub Actions every 15 min. Python 3.12 + requests only.
 Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
+          TEST_HOME (main|<name>|all, for FORCE_TEST),
           VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, NOTIFYME_ACCESS_CODE,
-          VOICEMONKEY_CHIME
+          VOICEMONKEY_CHIME, ALL_SECRETS (JSON of all repo secrets; each
+          HOME_<NAME> secret is one more home, made with setup.html)
 """
 import json
 import os
@@ -143,95 +145,186 @@ def fetch_weather(cfg=CONFIG) -> dict:
             time.sleep(2 ** attempt)
     raise RuntimeError(f"Open-Meteo failed after 3 tries: {last}")
 
+# ----------------------------------------------------------------- HOMES ---
+def load_homes(env=os.environ) -> list:
+    """Your own home ("main", from the usual secrets) plus one home per
+    HOME_<NAME> secret. Each HOME_ secret holds the code from setup.html:
+    {"name", "lat", "lon", "tz", "notifyme", "vm_token", "vm_device", "mode"}."""
+    homes = [{
+        "id": "main", "name": "main",
+        "lat": CONFIG["lat"], "lon": CONFIG["lon"], "tz": CONFIG["tz"],
+        "notifyme": env.get("NOTIFYME_ACCESS_CODE", ""),
+        "vm_token": env.get("VOICEMONKEY_TOKEN", ""),
+        "vm_device": env.get("VOICEMONKEY_DEVICE", ""),
+        "chime": env.get("VOICEMONKEY_CHIME", ""),
+        "mode": env.get("MODE") or CONFIG["mode_default"],
+    }]
+    try:
+        secrets = json.loads(env.get("ALL_SECRETS") or "{}")
+    except ValueError:
+        secrets = {}
+    for key in sorted(secrets):
+        if not key.startswith("HOME_"):
+            continue
+        hid = key[5:].lower()
+        try:
+            h = json.loads(secrets[key])
+            home = {
+                "id": hid, "name": str(h.get("name") or hid),
+                "lat": float(h["lat"]), "lon": float(h["lon"]),
+                "tz": h.get("tz") or CONFIG["tz"],
+                "notifyme": h.get("notifyme", ""),
+                "vm_token": h.get("vm_token", ""), "vm_device": h.get("vm_device", ""),
+                "chime": h.get("chime", ""),
+                "mode": h.get("mode") or CONFIG["mode_default"],
+            }
+            ZoneInfo(home["tz"])  # fail now, not mid-run
+        except Exception:  # noqa: BLE001  (never print the secret itself)
+            print(f"ERROR {key}: not a valid home code, skipped.", file=sys.stderr)
+            continue
+        homes.append(home)
+    return homes
 
-def _notify_me(title, text):
+
+def home_cfg(home: dict) -> dict:
+    return {**CONFIG, "lat": home["lat"], "lon": home["lon"], "tz": home["tz"]}
+
+
+# ------------------------------------------------------------- SENDING ---
+def _notify_me(title, text, code):
     r = requests.get(NM_URL, timeout=15, params={
         "notification": text,
         "title": title,  # the title is what shows on the Echo itself
-        "accessCode": os.environ["NOTIFYME_ACCESS_CODE"],
+        "accessCode": code,
     })
     r.raise_for_status()
 
 
-def _announce(title, text):
+def _announce(title, text, token, device, chime=""):
     payload = {
-        "token": os.environ["VOICEMONKEY_TOKEN"],
-        "device": os.environ["VOICEMONKEY_DEVICE"],
+        "token": token,
+        "device": device,
         "speech": f"{title}. {text}",
         "text_display": f"{title}\n{text}",  # shown on the Echo Show screen
         "display_seconds": CONFIG["display_seconds"],
     }
-    chime = os.environ.get("VOICEMONKEY_CHIME") or CONFIG["chime"]
+    chime = chime or CONFIG["chime"]
     if chime:
         payload["chime"] = chime
     r = requests.post(VM_URL, timeout=15, json=payload)
     r.raise_for_status()
 
 
-def send(mode: str, title: str, text: str, speak: bool):
+def send(home: dict, title: str, text: str, speak: bool):
     """auto: silent ping always, plus spoken when `speak` (if Voice Monkey is set up).
     notify_me: silent only. announce: spoken only."""
+    mode = home["mode"]
     if mode not in ("auto", "notify_me", "announce"):
         raise ValueError(f"unknown MODE {mode!r}")
-    if mode in ("auto", "notify_me") and os.environ.get("NOTIFYME_ACCESS_CODE"):
-        _notify_me(title, text)
-    voice_ready = os.environ.get("VOICEMONKEY_TOKEN") and os.environ.get("VOICEMONKEY_DEVICE")
+    if mode in ("auto", "notify_me") and home["notifyme"]:
+        _notify_me(title, text, home["notifyme"])
+    voice_ready = home["vm_token"] and home["vm_device"]
     if mode == "announce" or (mode == "auto" and speak and voice_ready):
-        _announce(title, text)
+        _announce(title, text, home["vm_token"], home["vm_device"], home["chime"])
+
+
+# --------------------------------------------------------------- STATE ---
+BLANK = {"day": "", "open": False, "last_alert": ""}
 
 
 def load_state() -> dict:
-    if STATE_FILE.exists():
-        return json.loads(STATE_FILE.read_text())
-    return {"day": "", "open": False, "last_alert": "", "heartbeat": ""}
+    """{"heartbeat": day, "homes": {id: {day, open, last_alert}}}.
+    The old one-home file becomes the "main" home."""
+    s = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
+    if "homes" not in s:
+        old = {k: s[k] for k in BLANK if k in s}
+        s = {"heartbeat": s.get("heartbeat", ""), "homes": {"main": {**BLANK, **old}}}
+    return s
+
+
+# ---------------------------------------------------------------- MAIN ---
+def _why(e) -> str:
+    """Error type and HTTP status only: request URLs carry access codes and locations."""
+    status = getattr(getattr(e, "response", None), "status_code", None)
+    return type(e).__name__ + (f" HTTP {status}" if status else "")
+
+
+def mask_secrets(homes):
+    """Hide every code in GitHub's public logs (a HOME_ secret is masked only as a whole)."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        for h in homes:
+            for k in ("notifyme", "vm_token", "vm_device"):
+                if h[k]:
+                    print(f"::add-mask::{h[k]}")
+
+
+def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
+    """Check one home and alert if needed. Returns that home's new state."""
+    cfg = home_cfg(home)
+    now = datetime.now(ZoneInfo(cfg["tz"]))
+    today = now.strftime("%Y-%m-%d")
+    w = fetch_weather(cfg)
+    title, msg = build_message(now.date(), w, spoken=home["mode"] == "announce")
+    tag = f"[{home['id']}]"
+
+    if force:
+        print(f"{tag} FORCE_TEST mode={home['mode']} title={title!r} msg={msg!r} dry={dry}")
+        if not dry:
+            send(home, title, msg, speak=True)
+        return state
+
+    ok, checks = evaluate(now, w, cfg)
+    reason = close_reason(w, cfg)
+    new, action = next_state(state, today, ok, reason)
+    if action == "close" and not (cfg["close_from"] <= now.time() < cfg["close_until"]):
+        action = None  # too early or late for a reminder; state already cleared
+
+    print(f"{tag} {now:%Y-%m-%d %H:%M} ok={ok} action={action} reason={reason} "
+          f"optimal={is_optimal(w, cfg)} weather={w} checks={checks}")
+    if dry:
+        return state
+
+    if action == "open":
+        send(home, title, msg, speak=is_optimal(w, cfg))
+    elif action == "close":
+        c_title, c_msg = build_message(now.date(), w, close=reason)
+        send(home, c_title, c_msg, speak=True)
+    return new
 
 
 def main() -> int:
     dry = os.environ.get("DRY_RUN") == "1"
-    mode = os.environ.get("MODE") or CONFIG["mode_default"]
-    now = datetime.now(ZoneInfo(CONFIG["tz"]))
-    today = now.strftime("%Y-%m-%d")
-
-    try:
-        w = fetch_weather()
-    except RuntimeError as e:
-        print(f"ERROR {e}. No alert sent.", file=sys.stderr)
-        return 1
-
-    spoken_text = mode == "announce"
-    title, msg = build_message(now.date(), w, spoken=spoken_text)
-
-    if os.environ.get("FORCE_TEST") == "1":
-        print(f"FORCE_TEST mode={mode} title={title!r} msg={msg!r} dry={dry}")
-        if not dry:
-            send(mode, title, msg, speak=True)
-        return 0
+    force = os.environ.get("FORCE_TEST") == "1"
+    test_home = (os.environ.get("TEST_HOME") or "main").lower()
+    homes = load_homes()
+    mask_secrets(homes)
+    if force and test_home != "all":
+        homes = [h for h in homes if h["id"] == test_home]
+        if not homes:
+            print(f"ERROR no home called {test_home!r}.", file=sys.stderr)
+            return 1
 
     state = load_state()
-    ok, checks = evaluate(now, w)
-    reason = close_reason(w)
-    new, action = next_state(state, today, ok, reason)
-    if action == "close" and not (CONFIG["close_from"] <= now.time() < CONFIG["close_until"]):
-        action = None  # too early or late for a reminder; state already cleared
-
-    print(f"{now:%Y-%m-%d %H:%M} ok={ok} action={action} reason={reason} "
-          f"optimal={is_optimal(w)} weather={w} checks={checks}")
+    new = {"heartbeat": state["heartbeat"], "homes": dict(state["homes"])}
+    failed = 0
+    for home in homes:
+        before = state["homes"].get(home["id"], BLANK)
+        try:
+            new["homes"][home["id"]] = run_home(home, before, dry, force)
+        except Exception as e:  # noqa: BLE001  one broken home must not stop the others
+            failed += 1
+            print(f"ERROR [{home['id']}] {_why(e)}. No alert sent.", file=sys.stderr)
 
     if dry:
         print("DRY_RUN: nothing sent, state not saved.")
-        return 0
+        return 1 if failed else 0
 
-    if action == "open":
-        send(mode, title, msg, speak=is_optimal(w))
-    elif action == "close":
-        c_title, c_msg = build_message(now.date(), w, close=reason)
-        send(mode, c_title, c_msg, speak=True)
-
-    if today != new.get("heartbeat"):
+    today = datetime.now(ZoneInfo(CONFIG["tz"])).strftime("%Y-%m-%d")
+    if today != new["heartbeat"]:
         new["heartbeat"] = today  # one commit/day keeps the cron from auto-disabling
     if new != state:
         STATE_FILE.write_text(json.dumps(new, indent=2) + "\n")
-    return 0
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
