@@ -522,3 +522,30 @@ def build_message(d: date, w: dict, spoken: bool = False, rng=random, close=None
     stats = words["stats"].format(t=temp, u=words["deg"] if spoken else words["unit"],
                                   h=f"{w['humidity']:.0f}", d=f"{w['dew_point']:.0f}")
     return title, f"{joke} {stats}"
+
+
+# ------------------------------------------------ "should I open?" answer ---
+# Why not, per failed check (alert.py evaluate). {t} temp, {h} humidity, {d} dew
+# point, {w} wind km/h, {m} lowest temp in the next 2h. Spoken text.
+REASONS = {
+    "en": {
+        "too_cold": "it's only {t} degrees, too cool", "too_hot": "it's {t} degrees, too warm",
+        "too_damp": "humidity is {h} percent, too damp", "too_dry": "the air is too dry, {h} percent humidity",
+        "dew_point": "it's muggy, dew point {d}", "no_precip": "it's raining right now",
+        "no_rain_soon": "rain is coming in the next 2 hours",
+        "not_getting_cold": "it's dropping to {m} degrees soon", "wind": "it's too windy, {w} kilometres an hour",
+        "no": "Not right now: {why}.", "and": " and ",
+        "yes": "Yes! {title}. {body}", "error": "Sorry, I can't get the weather right now. Try again in a minute.",
+        "help": "Ask me: should I open the windows?", "bye": "Bye!",
+    },
+    "fr": {
+        "too_cold": "il fait juste {t} degrés, trop frais", "too_hot": "il fait {t} degrés, trop chaud",
+        "too_damp": "l'humidité est à {h} pour cent, trop humide", "too_dry": "l'air est trop sec, {h} pour cent d'humidité",
+        "dew_point": "c'est collant, point de rosée {d}", "no_precip": "il pleut en ce moment",
+        "no_rain_soon": "de la pluie s'en vient dans les 2 prochaines heures",
+        "not_getting_cold": "ça descend à {m} degrés bientôt", "wind": "il vente trop, {w} kilomètres à l'heure",
+        "no": "Pas maintenant : {why}.", "and": " et ",
+        "yes": "Oui! {title}. {body}", "error": "Désolé, je n'arrive pas à avoir la météo. Réessaie dans une minute.",
+        "help": "Demande-moi : est-ce que j'ouvre les fenêtres?", "bye": "Bye!",
+    },
+}

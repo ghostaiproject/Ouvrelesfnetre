@@ -298,3 +298,16 @@ def test_compact_home_code():
         ("Julie", 46.813, -71.208, "fr", "abc", "auto", "America/Toronto")
     assert (c["mode"], c["tz"], c["vm_token"], c["vm_device"], c["notifyme"]) == \
         ("announce", "America/Halifax", "tok", "echo-1", "")
+
+
+def test_answer_should_i_open():
+    late = at(23, 30)   # asking outside the alert slots still gets a real answer
+    assert alert.answer(GOOD, late, "en", rng=random.Random(1)).startswith("Yes! 19 degrees")
+    assert alert.answer(GOOD, late, "fr").startswith("Oui! 19 degrés")
+    assert alert.answer({**GOOD, "precip": 1, "rain_soon": True}, late, "en") == \
+        "Not right now: it's raining right now."
+    assert alert.answer({**GOOD, "temp": 9, "min_temp_soon": 6}, late, "fr") == \
+        "Pas maintenant : il fait juste 9 degrés, trop frais et ça descend à 6 degrés bientôt."
+    assert "too warm" in alert.answer({**GOOD, "temp": 25}, late, "en")
+    assert "too dry" in alert.answer({**GOOD, "humidity": 20}, late, "en")
+    assert "kilomètres à l'heure" in alert.answer({**GOOD, "wind": 40}, late, "fr")

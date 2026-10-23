@@ -1,0 +1,46 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "window check",
+      "intents": [
+        {
+          "name": "ShouldOpenIntent",
+          "slots": [],
+          "samples": [
+            "should I open the windows",
+            "should I open the window",
+            "can I open the windows",
+            "is it a good time to open the windows",
+            "do I open the windows",
+            "is it nice enough to open the windows",
+            "should I open up",
+            "open the windows or not",
+            "is it good to open the windows",
+            "should the windows be open"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        }
+      ],
+      "types": []
+    }
+  }
+}

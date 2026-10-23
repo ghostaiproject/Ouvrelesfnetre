@@ -1,0 +1,46 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "conseil fenêtres",
+      "intents": [
+        {
+          "name": "ShouldOpenIntent",
+          "slots": [],
+          "samples": [
+            "est-ce que j'ouvre les fenêtres",
+            "est-ce que je peux ouvrir les fenêtres",
+            "j'ouvre les fenêtres",
+            "c'est un bon moment pour ouvrir les fenêtres",
+            "dois-je ouvrir les fenêtres",
+            "est-ce que j'ouvre la fenêtre",
+            "je peux ouvrir les fenêtres",
+            "on ouvre les fenêtres",
+            "fait-il assez beau pour ouvrir les fenêtres",
+            "est-ce que j'ouvre ou pas"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        }
+      ],
+      "types": []
+    }
+  }
+}

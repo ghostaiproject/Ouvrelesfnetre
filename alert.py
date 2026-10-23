@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from flair import build_message, norm_lang
+from flair import REASONS, build_message, norm_lang
 
 # ---------------------------------------------------------------- CONFIG ---
 CONFIG = {
@@ -117,7 +117,7 @@ def next_state(state: dict, today: str, ok: bool, closing):
 
 
 # ------------------------------------------------------------------- I/O ---
-def fetch_weather(cfg=CONFIG) -> dict:
+def fetch_weather(cfg=CONFIG, tries=3, timeout=15) -> dict:
     params = {
         "latitude": cfg["lat"], "longitude": cfg["lon"], "timezone": cfg["tz"],
         "current": "temperature_2m,relative_humidity_2m,dew_point_2m,"
@@ -126,9 +126,9 @@ def fetch_weather(cfg=CONFIG) -> dict:
         "forecast_hours": 3,  # this hour + next 2
     }
     last = None
-    for attempt in range(3):
+    for attempt in range(tries):
         try:
-            r = requests.get(API, params=params, timeout=15)
+            r = requests.get(API, params=params, timeout=timeout)
             r.raise_for_status()
             j = r.json()
             c, h = j["current"], j["hourly"]
@@ -145,8 +145,36 @@ def fetch_weather(cfg=CONFIG) -> dict:
             }
         except Exception as e:  # noqa: BLE001
             last = e
-            time.sleep(2 ** attempt)
-    raise RuntimeError(f"Open-Meteo failed after 3 tries: {last}")
+            if attempt < tries - 1:
+                time.sleep(2 ** attempt)
+    raise RuntimeError(f"Open-Meteo failed after {tries} tries: {last}")
+
+def answer(w: dict, now_local: datetime, lang="en", cfg=CONFIG, rng=None) -> str:
+    """Spoken reply to "should I open the windows?": same rules as the alert,
+    except the time-of-day slots (you asked, so the time is always fine)."""
+    lang = norm_lang(lang)
+    r = REASONS[lang]
+    ok, checks = evaluate(now_local, w, cfg)
+    failed = [k for k, v in checks.items() if not v and k != "time"]
+    if not failed:
+        kw = {"rng": rng} if rng else {}
+        title, body = build_message(now_local.date(), w, spoken=True, lang=lang, **kw)
+        return r["yes"].format(title=title, body=body)
+    keys = []
+    for k in failed:
+        if k == "temp":
+            keys.append("too_cold" if w["temp"] < cfg["temp_min"] else "too_hot")
+        elif k == "humidity":
+            keys.append("too_damp" if w["humidity"] > cfg["hum_max"] else "too_dry")
+        elif k in r:
+            keys.append(k)
+    if "no_precip" in keys and "no_rain_soon" in keys:
+        keys.remove("no_rain_soon")  # raining now says enough
+    vals = {"t": f"{w['temp']:.0f}", "h": f"{w['humidity']:.0f}", "d": f"{w['dew_point']:.0f}",
+            "w": f"{w['wind']:.0f}", "m": f"{w['min_temp_soon']:.0f}"}
+    why = r["and"].join(r[k].format(**vals) for k in keys[:2])  # top 2 reasons, short to hear
+    return r["no"].format(why=why)
+
 
 # ----------------------------------------------------------------- HOMES ---
 def load_homes(env=os.environ) -> list:
