@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 import alert
 from alert import close_reason, evaluate, in_alert_window, is_optimal, next_state
-from flair import CLOSE_LINES, WEATHER_LINES, build_message, holiday_for, weather_kind
+from flair import CLOSE_LINES, LINES, WEATHER_LINES, build_message, holiday_for, weather_kind
 
 TZ = ZoneInfo("America/Toronto")
 GOOD = {"temp": 19, "humidity": 50, "dew_point": 8, "precip": 0, "wind": 10,
@@ -118,8 +118,8 @@ def test_message_builds():
     t, b = build_message(date(2026, 10, 22), GOOD, spoken=True)
     assert "degrees" in b
     assert build_message(date(2026, 10, 30), GOOD)[0]
-    assert build_message(date(2026, 10, 22), GOOD, close="rain") in CLOSE_LINES["rain"]
-    assert build_message(date(2026, 10, 22), GOOD, close="cold") in CLOSE_LINES["cold"]
+    assert build_message(date(2026, 10, 22), GOOD, close="rain") in [x[:2] for x in CLOSE_LINES["en"]["rain"]]
+    assert build_message(date(2026, 10, 22), GOOD, close="cold") in [x[:2] for x in CLOSE_LINES["en"]["cold"]]
 
 
 def test_weather_kind():
@@ -134,7 +134,7 @@ def test_titles_match_weather_and_temp():
     d = date(2026, 10, 22)
     for kind, w in (("cool", {**GOOD, "temp": 16}), ("mild", GOOD),
                     ("warm", {**GOOD, "temp": 21.6}), ("breezy", {**GOOD, "wind": 25})):
-        allowed = {t for t, _ in WEATHER_LINES[kind]}
+        allowed = {t for t, *_ in WEATHER_LINES["en"][kind]}
         for seed in range(10):
             t, _ = build_message(d, w, rng=random.Random(seed))
             deg = f"{w['temp']:.0f}°"
@@ -236,3 +236,65 @@ def test_test_alert_only_goes_to_chosen_home(tmp_path, monkeypatch):
     assert alert.main() == 0 and seen == ["main"]
     monkeypatch.setenv("TEST_HOME", "nobody")
     assert alert.main() == 1
+
+
+def test_25_unique_lines_per_pool_in_both_languages():
+    for pools in (WEATHER_LINES, CLOSE_LINES):
+        assert set(pools) == {"en", "fr"}
+        assert set(pools["en"]) == set(pools["fr"])
+        for lang in pools:
+            for kind, lines in pools[lang].items():
+                assert len(lines) == 25, (lang, kind)
+                assert len({t for t, *_ in lines}) == 25, (lang, kind)   # no repeated titles
+                assert any(not sun for *_, sun in lines)                 # always a cloudy-day option
+    for kind, lines in WEATHER_LINES["fr"].items():
+        assert all("{deg}" in t for t, *_ in lines), kind
+    assert set(LINES["en"]) == set(LINES["fr"])
+
+
+def test_french_messages():
+    d = date(2026, 10, 22)
+    for seed in range(20):
+        t, b = build_message(d, GOOD, rng=random.Random(seed), lang="fr")
+        assert "19°" in t and t.replace("19°", "{deg}") in {x for x, *_ in WEATHER_LINES["fr"]["mild"]}
+        assert "19 C dehors, 50 pour cent d'humidité, point de rosée 8." in b
+    t, b = build_message(d, GOOD, spoken=True, lang="fr")
+    assert "19 degrés" in t and "19 degrés dehors" in b
+    assert build_message(d, GOOD, close="rain", lang="fr") in [x[:2] for x in CLOSE_LINES["fr"]["rain"]]
+    assert build_message(date(2026, 10, 30), GOOD, lang="fr") [0].endswith(", 19°")
+    assert build_message(date(2026, 10, 30), GOOD, lang="fr")[0].replace(", 19°", "") in \
+        {x for x, *_ in LINES["fr"]["halloween"]}
+    assert build_message(d, GOOD, lang="xx")[1].endswith("dew point 8.")  # unknown -> English
+
+
+def test_homes_carry_their_language():
+    fr = json.dumps({**json.loads(FRIEND), "lang": "fr"})
+    homes = alert.load_homes({"ALERT_LANG": "FR", "ALL_SECRETS": json.dumps(
+        {"HOME_MOM": FRIEND, "HOME_JULIE": fr})})
+    assert {h["id"]: h["lang"] for h in homes} == {"main": "fr", "julie": "fr", "mom": "en"}
+    assert alert.load_homes({})[0]["lang"] == "en"
+
+
+def test_sun_jokes_only_when_sunny():
+    d, hot = date(2026, 10, 22), {**GOOD, "temp": 21}
+    sun_titles = {t for lang in ("en", "fr") for t, _, s in WEATHER_LINES[lang]["warm"] if s}
+    for lang in ("en", "fr"):
+        for seed in range(200):
+            t, _ = build_message(d, {**hot, "sunny": False}, rng=random.Random(seed), lang=lang)
+            assert t.replace("21°", "{deg}") not in sun_titles
+    seen = {build_message(d, {**hot, "sunny": True}, rng=random.Random(s))[0].replace("21°", "{deg}")
+            for s in range(300)}
+    assert seen & sun_titles   # sunny days can get them
+
+
+def test_compact_home_code():
+    code = json.dumps({"n": "Julie", "p": [46.813, -71.208], "l": "fr", "c": "abc"})
+    vm_only = json.dumps({"n": "Chalet", "p": [45.5, -73.6], "l": "en", "z": "America/Halifax",
+                          "t": "tok", "d": "echo-1"})
+    homes = {h["id"]: h for h in alert.load_homes({"ALL_SECRETS": json.dumps(
+        {"HOME_JULIE": code, "HOME_CHALET": vm_only})})}
+    j, c = homes["julie"], homes["chalet"]
+    assert (j["name"], j["lat"], j["lon"], j["lang"], j["notifyme"], j["mode"], j["tz"]) == \
+        ("Julie", 46.813, -71.208, "fr", "abc", "auto", "America/Toronto")
+    assert (c["mode"], c["tz"], c["vm_token"], c["vm_device"], c["notifyme"]) == \
+        ("announce", "America/Halifax", "tok", "echo-1", "")

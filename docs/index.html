@@ -231,6 +231,7 @@
     </div>
     <p class="hint" id="copied"></p>
     <p class="hint" id="sendHow"></p>
+    <p class="hint" data-t="langNote"></p>
     <p class="hint" data-t="after"></p>
   </section>
 </main>
@@ -255,7 +256,7 @@ const T = {
     guideIntro: "Suis les images (nouvelle app Alexa). Le cercle orange 👆 montre où appuyer. Les mots peuvent varier un peu selon ta version de l'app.",
     prev: "◀ Retour", next: "Suivant ▶", done: "Terminé ✓", stepOf: (i, n) => `Étape ${i} de ${n}`,
     codeLabel: "Colle ton code ici", paste: "Coller",
-    nmHint: "Quand une alerte arrive, ton Echo s'allume en jaune. Demande : « Alexa, quelles sont mes notifications? »",
+    nmHint: "Quand une alerte arrive, ton Echo s'allume en jaune. Demande : « Alexa, quelles sont mes notifications? » Pour qu'Alexa lise bien le français, ton Echo doit être réglé en français (app Alexa → Appareils → ton Echo → Langue → Français (Canada)).",
     vmTitle: "Option : Echo Show qui parle (Voice Monkey)",
     vmHint: "Pour que ton Echo dise l'alerte à voix haute (et l'affiche sur l'écran d'un Echo Show). Gratuit, environ 10 minutes. Tu peux sauter cette partie.",
     vmToken: "Ton token Voice Monkey", vmDevice: "L'ID de ton speaker",
@@ -280,6 +281,7 @@ const T = {
     share: "Envoyer", copy: "Copier", copied: "Copié ✓ Colle-le dans un texto ou un courriel.",
     sendShare: "Appuie sur « Envoyer », choisis Messages (ou Messenger, courriel…), choisis la personne, puis envoie.",
     sendCopy: "Appuie sur « Copier », ouvre tes textos ou tes courriels, appuie longtemps dans la zone de texte → Coller, puis envoie.",
+    langNote: "🇫🇷 Tes alertes, blagues et messages parlés seront en français. Pour l'anglais, appuie sur « English » en haut : le code se met à jour tout seul.",
     after: "Garde ce code pour toi : il permet d'envoyer des notifications à ton Echo.",
     errName: "Écris un nom (étape 1).", errTown: "Choisis ta ville dans la liste (étape 2).",
     errCode: "Colle ton code Notify Me (étape 3), ou remplis Voice Monkey.",
@@ -359,6 +361,7 @@ const T = {
     share: "Send", copy: "Copy", copied: "Copied ✓ Paste it in a text or email.",
     sendShare: "Tap \"Send\", pick Messages (or Messenger, email…), pick the person, then send.",
     sendCopy: "Tap \"Copy\", open your texts or email, long-press in the message box → Paste, then send.",
+    langNote: "🇬🇧 Your alerts, jokes and spoken messages will be in English. For French, tap \"Français\" at the top: the code updates by itself.",
     after: "Keep this code private: it lets anyone send notifications to your Echo.",
     errName: "Type a name (step 1).", errTown: "Pick your town in the list (step 2).",
     errCode: "Paste your Notify Me code (step 3), or fill in Voice Monkey.",
@@ -541,10 +544,14 @@ function build() {
   const err = !id ? t.errName : !p ? t.errTown : !(code || (vt && vd)) ? t.errCode : "";
   $("makeErr").textContent = err;
   if (err) { $("result").style.display = "none"; message = ""; return; }
-  const home = { name, lat: Math.round(p.lat * 100) / 100, lon: Math.round(p.lon * 100) / 100, tz: p.tz,
-                 mode: code ? "auto" : "announce" };  // no Notify Me: speak every alert
-  if (code) home.notifyme = code;
-  if (vt && vd) { home.vm_token = vt; home.vm_device = vd; }
+  // Compact code (alert.py load_homes): n name, p [lat, lon] (3 decimals, about 100 m),
+  // l language of alerts/jokes/speech, z timezone only if not Toronto, c Notify Me, t/d Voice Monkey.
+  // No c = every alert spoken (announce); that's implied, so no mode key.
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  const home = { n: name, p: [r3(p.lat), r3(p.lon)], l: lang };
+  if (p.tz && p.tz !== "America/Toronto") home.z = p.tz;
+  if (code) home.c = code;
+  if (vt && vd) { home.t = vt; home.d = vd; }
   message = t.msgHead + "\n" + t.secretName + ": HOME_" + id + "\n" + t.value + ":\n" + JSON.stringify(home);
   $("out").textContent = message;
   $("share").style.display = navigator.share ? "" : "none";

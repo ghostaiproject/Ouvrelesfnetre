@@ -16,6 +16,15 @@ Friends-and-family release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
+## UPDATE (2026-10-22 late): FR/EN alerts, 25 jokes per pool, compact code, sun check
+- Each home has a language: `lang` (en|fr). Setup page saves the page's FR/EN choice; your own home uses repo var `ALERT_LANG` (default en).
+  Titles, jokes, weather line and spoken text all follow it (flair.py `build_message(..., lang=)`).
+- flair.py stores lines as compact "Title | Joke" text blocks. 25 lines per weather pool (breezy/cool/mild/warm) and close pool (rain/cold), per language; holidays 3-5 each.
+- Jokes match the weather right now: pool by wind/temp, and lines starting with `*` (sun jokes) only when Open-Meteo says is_day and cloud_cover < 40 (`sunny_cloud_max`).
+- Home code is compact: `{"n","p":[lat,lon] 3 decimals,"l","z" if not Toronto,"c","t","d"}`; no `c` = announce. Old long-key codes still load.
+- PyPI is blocked in the cloud workspace; tests were run with a stand-in runner (27/27). CI runs real pytest.
+- French speech sounds right only if the Echo itself is set to French; Voice Monkey has no per-message voice option documented.
+
 ## UPDATE (2026-10-22 night): guides use the app menus only, no Alexa+ chat
 Owner's call: do NOT use Alexa+ chat (typing "Enable Notify Me" did not work; chat-navigation version a811bf7 replaced).
 Skills: home ≡ menu top left -> More -> Skills & Games tile -> "Search Alexa Skills" bar -> result -> Enable to use.
