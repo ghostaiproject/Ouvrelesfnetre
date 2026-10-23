@@ -348,7 +348,7 @@ def test_ntfy_payload(monkeypatch):
     alert._ntfy("Fenêtre ouverte 19°", "Il fait doux", "fenetres-abc123", "cold")
     assert sent["url"] == "https://ntfy.sh/" and sent["topic"] == "fenetres-abc123"
     assert sent["title"] == "Fenêtre ouverte 19°" and sent["message"] == "Il fait doux"
-    assert sent["tags"] == ["snowflake"] and sent["priority"] == 4
+    assert "tags" not in sent and sent["priority"] == 4   # no emoji: phones may read it aloud
 
 
 def test_test_alert_finds_google_home_by_name(tmp_path, monkeypatch):

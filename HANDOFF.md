@@ -25,6 +25,10 @@ Friends-and-family release is live.
 - Secret `GHOME_<NAME>` = `{"n","p","l","z"?,"g": topic}`. `alert.py _google_home()`: id `g-<name>`, mode `push`,
   every alert -> `_ntfy()` (JSON publish to https://ntfy.sh/, tags by kind, priority 4 for close reminders).
   TEST_HOME `maman` also finds `g-maman`. Topic masked in logs.
+- Owner tested: deep link subscribed directly (no dialog), page Test push arrived on S23. Nest stays silent (expected).
+- Read aloud: optional MacroDroid section on google.html (9 drawn steps: Notification Received from ntfy ->
+  Speak Text "[notification_title]. [notification]"). Push homes now get the spoken wording ("19 degrés") and
+  no emoji tags (TTS would read them). MacroDroid menu drawings are from memory (English labels), not checked.
 - NOT verified: ntfy.sh is blocked from the cloud workspace, so no real push sent yet; tests 31/31 with the stand-in runner.
   Page drawings of the ntfy app are from memory, not real screenshots.
 
