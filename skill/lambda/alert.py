@@ -6,8 +6,8 @@ Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
           TEST_HOME (main|<name>|all, for FORCE_TEST),
           VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, NOTIFYME_ACCESS_CODE,
           VOICEMONKEY_CHIME, ALERT_LANG (en|fr, your own home), ALL_SECRETS (JSON of all repo secrets; each
-          HOME_<NAME> secret is one more Echo home (docs/echo.html), each GHOME_<NAME> secret one more
-          Google/Android home that gets phone pushes through ntfy (docs/google.html))
+          HOME_<NAME> secret is one more Echo home (docs/echo.html), each PHONE_<NAME> secret one more
+          home without an Echo that gets phone pushes through ntfy (docs/phone.html))
 """
 import json
 import os
@@ -202,8 +202,8 @@ def load_homes(env=os.environ) -> list:
     except ValueError:
         secrets = {}
     for key in sorted(secrets):
-        if key.startswith("GHOME_"):
-            home = _google_home(key, secrets[key])
+        if key.startswith(("PHONE_", "GHOME_")):   # GHOME_ = first name of PHONE_, still read
+            home = _phone_home(key, secrets[key])
             if home:
                 homes.append(home)
             continue
@@ -233,12 +233,11 @@ def load_homes(env=os.environ) -> list:
     return homes
 
 
-def _google_home(key: str, raw: str):
-    """A GHOME_<NAME> secret (docs/google.html): Google Home / Android homes.
-    Google speakers can't say custom text from the cloud, so these homes get every
-    alert as a phone push from ntfy instead. Keys: n name, p [lat, lon], l lang,
-    z timezone (default America/Toronto), g ntfy topic. Id is "g-<name>" so it
-    never clashes with an Echo home of the same name."""
+def _phone_home(key: str, raw: str):
+    """A PHONE_<NAME> secret (docs/phone.html): the no-Echo fallback. Every alert
+    goes to the phone as an ntfy push (any phone; MacroDroid can read it aloud).
+    Keys: n name, p [lat, lon], l lang, z timezone (default America/Toronto),
+    g ntfy topic. Id is "p-<name>" so it never clashes with an Echo home."""
     try:
         h = json.loads(raw)
         lat, lon = h["p"]
@@ -246,14 +245,14 @@ def _google_home(key: str, raw: str):
         if not topic or "/" in topic:
             raise ValueError("bad topic")
         home = {
-            "id": "g-" + key[6:].lower(), "name": str(h.get("n") or key[6:].lower()),
+            "id": "p-" + key.split("_", 1)[1].lower(), "name": str(h.get("n") or key.split("_", 1)[1].lower()),
             "lat": float(lat), "lon": float(lon), "tz": h.get("z") or CONFIG["tz"],
             "ntfy": topic, "notifyme": "", "vm_token": "", "vm_device": "", "chime": "",
             "mode": "push", "lang": norm_lang(str(h.get("l") or "fr").lower()),
         }
         ZoneInfo(home["tz"])
     except Exception:  # noqa: BLE001  (never print the secret itself)
-        print(f"ERROR {key}: not a valid Google home code, skipped.", file=sys.stderr)
+        print(f"ERROR {key}: not a valid phone home code, skipped.", file=sys.stderr)
         return None
     return home
 
@@ -299,7 +298,7 @@ def _ntfy(title, text, topic, kind="open"):
 
 def send(home: dict, title: str, text: str, speak: bool, kind: str = "open"):
     """auto: silent ping always, plus spoken when `speak` (if Voice Monkey is set up).
-    notify_me: silent only. announce: spoken only. push (Google homes): every alert
+    notify_me: silent only. announce: spoken only. push (phone homes): every alert
     goes to the phone, `speak` is ignored. kind: open|rain|cold|test (push icon)."""
     mode = home["mode"]
     if mode == "push":
@@ -387,8 +386,8 @@ def main() -> int:
     homes = load_homes()
     mask_secrets(homes)
     if force and test_home != "all":
-        # a Google home answers to its name too ("maman" finds "g-maman")
-        homes = [h for h in homes if h["id"] in (test_home, "g-" + test_home)]
+        # a phone home answers to its name too ("maman" finds "p-maman")
+        homes = [h for h in homes if h["id"] in (test_home, "p-" + test_home)]
         if not homes:
             print(f"ERROR no home called {test_home!r}.", file=sys.stderr)
             return 1

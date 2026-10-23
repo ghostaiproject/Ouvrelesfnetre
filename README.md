@@ -27,7 +27,7 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
 
 ## Friends and family (other homes)
 This repo checks every home with its own local weather; friends never touch GitHub.
-1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (a chooser, `docs/index.html`: Echo -> `docs/echo.html`, Google -> `docs/google.html`;
+1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (a chooser, `docs/index.html`: Echo -> `docs/echo.html`, no Echo -> `docs/phone.html`;
    turn on once at Settings > Pages > Deploy from branch `main`, folder `/docs`).
    French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
    and paste its code. The page gives them a message to send back to you.
@@ -37,16 +37,17 @@ This repo checks every home with its own local weather; friends never touch GitH
 - To remove a home, delete its secret. A broken code is skipped (see the run log), the other homes keep working.
 - Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
 
-## Google Home / Android homes (separate setup)
-Google speakers can't say custom text from the cloud, so Google homes get every alert
-(open and close) as a phone push through the free ntfy app, joke included. No Pi, nothing at home.
-1. Send them: `https://ghostaiproject.github.io/Ouvrelesfnetre/google.html` (the Echo page links to it too).
+## No Echo? Phone homes (separate setup)
+For anyone without an Echo (a crutch, any Android or iPhone): every alert (open and close) arrives as a
+phone push through the free ntfy app, joke included. Optional: MacroDroid reads it out loud. Nothing at home.
+1. Send them the main link; they tap "No Echo? Your phone" (or send `.../Ouvrelesfnetre/phone.html` directly).
    They type a name, pick their town, install ntfy, tap "Subscribe in ntfy", tap Test, then send you the message.
-2. Their message has a secret name like `GHOME_MAMAN` (G for Google, so it never mixes with Echo `HOME_` secrets).
+2. Their message has a secret name like `PHONE_MAMAN`, never mixed with Echo `HOME_` secrets.
    Add it the same way: Settings > Secrets and variables > Actions > New repository secret.
-3. Test: Actions > window-alert > Run workflow, home = `maman` (or `g-maman`).
-- Same rules, times and jokes as Echo homes, in their own language and time zone.
+3. Test: Actions > window-alert > Run workflow, home = `maman` (or `p-maman`).
+- Same rules, times and jokes as Echo homes, in their own language and time zone, worded for speech ("19 degrees").
 - The ntfy topic in their code is the only key to their alerts: keep it private (it's masked in logs).
+- Old `GHOME_` secrets (first name of this) still work.
 
 ## Notes
 - Cron can run a few minutes late. Normal.
