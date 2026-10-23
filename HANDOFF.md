@@ -21,8 +21,7 @@ Friends-and-family release is live.
   `{"heartbeat", "homes": {...}}` on the next run).
 - Guide screens redrawn 2026-10-22 for the new dark Alexa+ app from real (English) phone screenshots:
   More = tile grid, Skills & Games = "Discover Alexa" with search bar on top, Routines ⊕ top right,
-  New Routine = WHEN "Add an event" / ALEXA WILL "Add an action" + big Save at bottom. Notify Me guide is now 6 steps.
-  How to reach More from the home screen was not seen (guide just says "go to More").
+  New Routine = WHEN "Add an event" / ALEXA WILL "Add an action" + big Save at bottom. Notify Me guide is now 4 steps via Alexa+ chat ("Enable Notify Me", "Open Notify Me" typed in the Ask Alexa bar; English only); Voice Monkey 14 steps. Home = ≡ menu top left -> More. Not verified that Alexa+ enables skills from chat.
 - Guide screens are drawings: French Alexa menu names (esp. routine: "Lorsque ceci se produit",
   "Maison intelligente", "À partir de") not checked on a real phone.
 - No friend home added yet; no real Notify Me test for a HOME_ secret.
