@@ -50,6 +50,8 @@ phone push through the free ntfy app, joke included. Optional: MacroDroid reads 
 - Old `GHOME_` secrets (first name of this) still work.
 
 ## Notes
+- Privacy: the repo and its logs are public, so every home except yours ("main") shows up only as a
+  private hashed id (from its secret) in state.json and logs. No names, towns or codes are ever printed.
 - Cron can run a few minutes late. Normal.
 - `state.json` is committed back about once a day, which also keeps the schedule from auto-disabling after 60 days idle.
 - Silent mode: Echo ring glows yellow; ask "Alexa, what are my notifications?"

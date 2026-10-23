@@ -16,6 +16,13 @@ Multi-home release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
+## UPDATE (2026-10-23): privacy
+- Repo + Actions logs are PUBLIC, so homes now use private ids: `anon_id()` = "h-"/"p-" + sha256(secret value)[:10].
+  state.json keys and every log line use that id; names/towns/codes never printed (test_names_and_towns_never_reach_public_logs).
+  TEST_HOME still picks by typed name or secret name via in-memory `aliases`. Changing a home's code resets its state (fine).
+- "Tes données / Your data" box on echo.html and phone.html (no logging/tracking, typed data only builds the setup code,
+  town rounded ~100 m for weather only, code = encrypted secret, third parties: Open-Meteo search + Test buttons). Index footer too.
+
 ## UPDATE (2026-10-23, later): renamed "Google" -> "phone" (owner: it's the no-Echo crutch, not a Google thing)
 - Page `docs/phone.html` (google.html now just redirects there). Secrets `PHONE_<NAME>`, id `p-<name>`; `GHOME_` still read.
 - Chooser card: "Pas d'Echo? Ton téléphone". Echo page link: "Pas d'Echo? Ton téléphone peut faire la job".

@@ -169,7 +169,8 @@ def test_load_homes_main_plus_others():
            "ALL_SECRETS": json.dumps({"HOME_COTTAGE": OTHER, "HOME_BAD": "oops",
                                       "VOICEMONKEY_TOKEN": "x", "GITHUB_TOKEN": "y"})}
     homes = alert.load_homes(env)
-    assert [h["id"] for h in homes] == ["main", "cottage"]   # broken code skipped
+    assert [h["name"] for h in homes] == ["main", "Cottage"]   # broken code skipped
+    assert homes[1]["id"] == alert.anon_id(OTHER) and "cottage" not in homes[1]["id"]   # no name in public ids
     main, cot = homes
     assert main["notifyme"] == "mine" and main["mode"] == "announce"
     assert cot["name"] == "Cottage" and cot["lat"] == 46.81 and cot["notifyme"] == "abc"
@@ -216,10 +217,10 @@ def test_one_broken_home_does_not_stop_others(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setattr(alert, "run_home", fake_run)
     assert alert.main() == 1
-    assert seen == ["main", "cottage"]
+    assert seen == ["main", alert.anon_id(OTHER)]
     assert "SECRET" not in capsys.readouterr().err   # error text is never printed
     saved = json.loads((tmp_path / "state.json").read_text())
-    assert saved["homes"]["cottage"]["open"] is True     # cottage's state still saved
+    assert saved["homes"][alert.anon_id(OTHER)]["open"] is True     # cottage's state still saved
     assert saved["homes"]["main"] == alert.BLANK     # main left as it was
 
 
@@ -230,7 +231,7 @@ def test_test_alert_only_goes_to_chosen_home(tmp_path, monkeypatch):
     seen = []
     monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
     monkeypatch.setenv("TEST_HOME", "Cottage")
-    assert alert.main() == 0 and seen == ["cottage"]
+    assert alert.main() == 0 and seen == [alert.anon_id(OTHER)]
     seen.clear()
     monkeypatch.delenv("TEST_HOME")
     assert alert.main() == 0 and seen == ["main"]
@@ -271,7 +272,7 @@ def test_homes_carry_their_language():
     fr = json.dumps({**json.loads(OTHER), "lang": "fr"})
     homes = alert.load_homes({"ALERT_LANG": "FR", "ALL_SECRETS": json.dumps(
         {"HOME_COTTAGE": OTHER, "HOME_CONDO": fr})})
-    assert {h["id"]: h["lang"] for h in homes} == {"main": "fr", "condo": "fr", "cottage": "en"}
+    assert [h["lang"] for h in homes] == ["fr", "fr", "en"]   # main, CONDO, COTTAGE
     assert alert.load_homes({})[0]["lang"] == "en"
 
 
@@ -291,7 +292,7 @@ def test_compact_home_code():
     code = json.dumps({"n": "Condo", "p": [46.813, -71.208], "l": "fr", "c": "abc"})
     vm_only = json.dumps({"n": "Chalet", "p": [45.5, -73.6], "l": "en", "z": "America/Halifax",
                           "t": "tok", "d": "echo-1"})
-    homes = {h["id"]: h for h in alert.load_homes({"ALL_SECRETS": json.dumps(
+    homes = {h["name"].lower(): h for h in alert.load_homes({"ALL_SECRETS": json.dumps(
         {"HOME_CONDO": code, "HOME_CHALET": vm_only})})}
     j, c = homes["condo"], homes["chalet"]
     assert (j["name"], j["lat"], j["lon"], j["lang"], j["notifyme"], j["mode"], j["tz"]) == \
@@ -320,7 +321,8 @@ def test_phone_homes_get_pushes(monkeypatch):
     env = {"ALL_SECRETS": json.dumps({"PHONE_CHALET": PHONE_CODE, "HOME_COTTAGE": OTHER, "GHOME_OLD": PHONE_CODE,
                                       "GHOME_BAD": '{"n": "x"}', "GHOME_SLASH": '{"p": [1, 2], "g": "a/b"}'})}
     homes = alert.load_homes(env)
-    assert [h["id"] for h in homes] == ["main", "p-old", "cottage", "p-chalet"]   # broken codes skipped, old GHOME_ read
+    assert [h["name"] for h in homes] == ["main", "Chalet", "Cottage", "Chalet"]   # broken codes skipped, old GHOME_ read
+    assert homes[3]["id"] == alert.anon_id(PHONE_CODE, "p")
     g = homes[3]
     assert g["mode"] == "push" and g["ntfy"] == "fenetres-abc123" and g["lang"] == "fr"
     assert g["lat"] == 46.81 and g["tz"] == "America/Toronto" and g["notifyme"] == ""
@@ -358,4 +360,17 @@ def test_test_alert_finds_phone_home_by_name(tmp_path, monkeypatch):
     seen = []
     monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
     monkeypatch.setenv("TEST_HOME", "chalet")
-    assert alert.main() == 0 and seen == ["p-chalet"]
+    assert alert.main() == 0 and seen == [alert.anon_id(PHONE_CODE, "p")]
+
+
+def test_names_and_towns_never_reach_public_logs(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"PHONE_CHALET": PHONE_CODE, "HOME_BAD": '{"n": "Secretville"}'}))
+    monkeypatch.delenv("FORCE_TEST", raising=False)
+    monkeypatch.setattr(alert, "fetch_weather", lambda cfg: {**GOOD, "sunny": False})
+    monkeypatch.setattr(alert, "_ntfy", lambda *a: None)
+    alert.main()
+    out = capsys.readouterr()
+    logs = out.out + out.err + (tmp_path / "state.json").read_text()
+    for private in ("Chalet", "chalet", "CHALET", "Secretville", "46.81", "-71.21", "fenetres-abc123"):
+        assert private not in logs

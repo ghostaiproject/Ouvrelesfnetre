@@ -9,6 +9,7 @@ Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
           HOME_<NAME> secret is one more Echo home (docs/echo.html), each PHONE_<NAME> secret one more
           home without an Echo that gets phone pushes through ntfy (docs/phone.html))
 """
+import hashlib
 import json
 import os
 import sys
@@ -179,6 +180,18 @@ def answer(w: dict, now_local: datetime, lang="en", cfg=CONFIG, rng=None) -> str
 
 
 # ----------------------------------------------------------------- HOMES ---
+def anon_id(raw: str, prefix: str = "h") -> str:
+    """Private id for a home: a hash of its secret code, never its name. The repo and its
+    logs are public, so names and towns must never show up in state.json or run logs."""
+    return f"{prefix}-" + hashlib.sha256(raw.encode()).hexdigest()[:10]
+
+
+def aliases(key: str, name: str) -> set:
+    """Names that pick this home in a test run (kept in memory only, never printed)."""
+    short = key.split("_", 1)[1].lower()
+    return {short, str(name).lower(), "p-" + short}
+
+
 def load_homes(env=os.environ) -> list:
     """Your own home ("main", from the usual secrets) plus one home per
     HOME_<NAME> secret. Each HOME_ secret holds the code from setup.html.
@@ -216,7 +229,7 @@ def load_homes(env=os.environ) -> list:
             lat, lon = h["p"] if "p" in h else (h["lat"], h["lon"])
             nm = g("c", "notifyme")
             home = {
-                "id": hid, "name": str(g("n", "name") or hid),
+                "id": anon_id(secrets[key]), "name": str(g("n", "name") or hid),
                 "lat": float(lat), "lon": float(lon),
                 "tz": g("z", "tz") or CONFIG["tz"],
                 "notifyme": nm,
@@ -225,9 +238,10 @@ def load_homes(env=os.environ) -> list:
                 "mode": g("m", "mode") or ("auto" if nm or "lat" in h else "announce"),
                 "lang": norm_lang(str(g("l", "lang") or "en").lower()),
             }
+            home["aliases"] = aliases(key, home["name"])
             ZoneInfo(home["tz"])  # fail now, not mid-run
-        except Exception:  # noqa: BLE001  (never print the secret itself)
-            print(f"ERROR {key}: not a valid home code, skipped.", file=sys.stderr)
+        except Exception:  # noqa: BLE001  (never print the secret, its name or its town)
+            print(f"ERROR {anon_id(str(secrets[key]))}: not a valid home code, skipped.", file=sys.stderr)
             continue
         homes.append(home)
     return homes
@@ -245,14 +259,15 @@ def _phone_home(key: str, raw: str):
         if not topic or "/" in topic:
             raise ValueError("bad topic")
         home = {
-            "id": "p-" + key.split("_", 1)[1].lower(), "name": str(h.get("n") or key.split("_", 1)[1].lower()),
+            "id": anon_id(raw, "p"), "name": str(h.get("n") or key.split("_", 1)[1].lower()),
             "lat": float(lat), "lon": float(lon), "tz": h.get("z") or CONFIG["tz"],
             "ntfy": topic, "notifyme": "", "vm_token": "", "vm_device": "", "chime": "",
             "mode": "push", "lang": norm_lang(str(h.get("l") or "fr").lower()),
         }
+        home["aliases"] = aliases(key, home["name"])
         ZoneInfo(home["tz"])
     except Exception:  # noqa: BLE001  (never print the secret itself)
-        print(f"ERROR {key}: not a valid phone home code, skipped.", file=sys.stderr)
+        print(f"ERROR {anon_id(str(raw), 'p')}: not a valid phone home code, skipped.", file=sys.stderr)
         return None
     return home
 
@@ -386,10 +401,10 @@ def main() -> int:
     homes = load_homes()
     mask_secrets(homes)
     if force and test_home != "all":
-        # a phone home answers to its name too ("chalet" finds "p-chalet")
-        homes = [h for h in homes if h["id"] in (test_home, "p-" + test_home)]
+        # pick by the name the person typed (or its secret name); only the private id is printed
+        homes = [h for h in homes if test_home == h["id"] or test_home in h.get("aliases", ())]
         if not homes:
-            print(f"ERROR no home called {test_home!r}.", file=sys.stderr)
+            print("ERROR no home with that name.", file=sys.stderr)
             return 1
 
     state = load_state()
