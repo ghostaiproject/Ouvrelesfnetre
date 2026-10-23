@@ -31,6 +31,6 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
 - Silent mode: Echo ring glows yellow; ask "Alexa, what are my notifications?"
 
 ## Flair
-`flair.py` picks a themed title and joke (Halloween, Christmas, Saint-Jean, Canada Day, etc.), otherwise a random one from a general pool. Edit the lists in `flair.py` to add your own.
+`flair.py` picks a themed title and joke (Halloween, Christmas, Saint-Jean, Canada Day, etc.), otherwise one matching the weather: breezy (wind 20 km/h+), cool (under 18 C), mild (18 to 20 C) or warm (over 20 C). Every open title includes the current temp, e.g. "Goldilocks 19°". Edit the lists in `flair.py` to add your own.
 - Silent mode: only the title shows on the Echo itself; the full joke and numbers are read out when you ask for notifications.
 - Custom sound: Notify Me always uses Amazon's default sound. In spoken mode (`announce`), set repo variable `VOICEMONKEY_CHIME` to a sound from Voice Monkey's sound picker.
