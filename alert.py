@@ -5,7 +5,7 @@ Runs from GitHub Actions every 15 min. Python 3.12 + requests only.
 Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
           TEST_HOME (main|<name>|all, for FORCE_TEST),
           VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, NOTIFYME_ACCESS_CODE,
-          VOICEMONKEY_CHIME, ALL_SECRETS (JSON of all repo secrets; each
+          VOICEMONKEY_CHIME, ALERT_LANG (en|fr, your own home), ALL_SECRETS (JSON of all repo secrets; each
           HOME_<NAME> secret is one more home, made with setup.html)
 """
 import json
@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from flair import build_message
+from flair import build_message, norm_lang
 
 # ---------------------------------------------------------------- CONFIG ---
 CONFIG = {
@@ -47,6 +47,7 @@ CONFIG = {
     "indoor_margin": 2.0,          # FUTURE HOOK: outside must be this much cooler than inside
     "chime": "",                   # spoken mode: sound before speech (or VOICEMONKEY_CHIME)
     "display_seconds": 60,         # spoken mode: how long the text stays on the Echo Show screen
+    "sunny_cloud_max": 40,         # cloud cover % under this (daytime) = sunny, sun jokes allowed
 }
 STATE_FILE = Path(__file__).parent / "state.json"
 API = "https://api.open-meteo.com/v1/forecast"
@@ -120,7 +121,7 @@ def fetch_weather(cfg=CONFIG) -> dict:
     params = {
         "latitude": cfg["lat"], "longitude": cfg["lon"], "timezone": cfg["tz"],
         "current": "temperature_2m,relative_humidity_2m,dew_point_2m,"
-                   "precipitation,wind_speed_10m",
+                   "precipitation,wind_speed_10m,cloud_cover,is_day",
         "hourly": "temperature_2m,precipitation_probability,precipitation",
         "forecast_hours": 3,  # this hour + next 2
     }
@@ -139,6 +140,8 @@ def fetch_weather(cfg=CONFIG) -> dict:
                 "wind": c["wind_speed_10m"],
                 "min_temp_soon": min(t for t in h["temperature_2m"] if t is not None),
                 "rain_soon": max(probs) >= cfg["rain_prob_close"] or sum(rain) >= 0.2,
+                # sun jokes only when the sun is really out right now
+                "sunny": bool(c.get("is_day")) and (c.get("cloud_cover") or 0) < cfg["sunny_cloud_max"],
             }
         except Exception as e:  # noqa: BLE001
             last = e
@@ -148,8 +151,12 @@ def fetch_weather(cfg=CONFIG) -> dict:
 # ----------------------------------------------------------------- HOMES ---
 def load_homes(env=os.environ) -> list:
     """Your own home ("main", from the usual secrets) plus one home per
-    HOME_<NAME> secret. Each HOME_ secret holds the code from setup.html:
-    {"name", "lat", "lon", "tz", "notifyme", "vm_token", "vm_device", "mode"}."""
+    HOME_<NAME> secret. Each HOME_ secret holds the code from setup.html.
+    Compact keys (setup page): n name, p [lat, lon], z timezone (default
+    America/Toronto), l lang (en|fr), c Notify Me code, t Voice Monkey token,
+    d Voice Monkey device, m mode (default: auto with c, announce without).
+    Old long keys (name, lat, lon, tz, notifyme, vm_token, vm_device, mode, lang)
+    still work. lang picks the language of every title, joke and spoken line."""
     homes = [{
         "id": "main", "name": "main",
         "lat": CONFIG["lat"], "lon": CONFIG["lon"], "tz": CONFIG["tz"],
@@ -158,6 +165,7 @@ def load_homes(env=os.environ) -> list:
         "vm_device": env.get("VOICEMONKEY_DEVICE", ""),
         "chime": env.get("VOICEMONKEY_CHIME", ""),
         "mode": env.get("MODE") or CONFIG["mode_default"],
+        "lang": norm_lang((env.get("ALERT_LANG") or "en").lower()),
     }]
     try:
         secrets = json.loads(env.get("ALL_SECRETS") or "{}")
@@ -169,14 +177,18 @@ def load_homes(env=os.environ) -> list:
         hid = key[5:].lower()
         try:
             h = json.loads(secrets[key])
+            g = lambda short, long, d="": h.get(short, h.get(long, d))  # noqa: E731
+            lat, lon = h["p"] if "p" in h else (h["lat"], h["lon"])
+            nm = g("c", "notifyme")
             home = {
-                "id": hid, "name": str(h.get("name") or hid),
-                "lat": float(h["lat"]), "lon": float(h["lon"]),
-                "tz": h.get("tz") or CONFIG["tz"],
-                "notifyme": h.get("notifyme", ""),
-                "vm_token": h.get("vm_token", ""), "vm_device": h.get("vm_device", ""),
+                "id": hid, "name": str(g("n", "name") or hid),
+                "lat": float(lat), "lon": float(lon),
+                "tz": g("z", "tz") or CONFIG["tz"],
+                "notifyme": nm,
+                "vm_token": g("t", "vm_token"), "vm_device": g("d", "vm_device"),
                 "chime": h.get("chime", ""),
-                "mode": h.get("mode") or CONFIG["mode_default"],
+                "mode": g("m", "mode") or ("auto" if nm or "lat" in h else "announce"),
+                "lang": norm_lang(str(g("l", "lang") or "en").lower()),
             }
             ZoneInfo(home["tz"])  # fail now, not mid-run
         except Exception:  # noqa: BLE001  (never print the secret itself)
@@ -264,11 +276,12 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
     now = datetime.now(ZoneInfo(cfg["tz"]))
     today = now.strftime("%Y-%m-%d")
     w = fetch_weather(cfg)
-    title, msg = build_message(now.date(), w, spoken=home["mode"] == "announce")
+    lang = home.get("lang", "en")
+    title, msg = build_message(now.date(), w, spoken=home["mode"] == "announce", lang=lang)
     tag = f"[{home['id']}]"
 
     if force:
-        print(f"{tag} FORCE_TEST mode={home['mode']} title={title!r} msg={msg!r} dry={dry}")
+        print(f"{tag} FORCE_TEST mode={home['mode']} lang={lang} title={title!r} msg={msg!r} dry={dry}")
         if not dry:
             send(home, title, msg, speak=True)
         return state
@@ -287,7 +300,7 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
     if action == "open":
         send(home, title, msg, speak=is_optimal(w, cfg))
     elif action == "close":
-        c_title, c_msg = build_message(now.date(), w, close=reason)
+        c_title, c_msg = build_message(now.date(), w, close=reason, lang=lang)
         send(home, c_title, c_msg, speak=True)
     return new
 

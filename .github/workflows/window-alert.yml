@@ -29,6 +29,7 @@ jobs:
       - name: Run alert
         env:
           MODE: ${{ vars.MODE || 'auto' }}
+          ALERT_LANG: ${{ vars.ALERT_LANG || 'en' }}   # your own home: en or fr
           VOICEMONKEY_CHIME: ${{ vars.VOICEMONKEY_CHIME }}
           DRY_RUN: "0"
           FORCE_TEST: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
