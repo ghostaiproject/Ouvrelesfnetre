@@ -8,10 +8,12 @@
   :root {
     --bg: #f6f4ef; --card: #ffffff; --ink: #1f2328; --muted: #5d6470;
     --line: #dedad2; --accent: #2f6f4f; --accent-ink: #ffffff; --soft: #e8f1ec; --warn: #9a3b1b;
+    --tap: #e8590c; --alexa: #232f3e; --alexa-ink: #ffffff; --alexa-blue: #00a8e1;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #15181c; --card: #1e2227; --ink: #e8e6e3; --muted: #a0a6ae;
-            --line: #33383f; --accent: #6fbf94; --accent-ink: #0f1a14; --soft: #1f2d26; --warn: #f0a07f; }
+            --line: #33383f; --accent: #6fbf94; --accent-ink: #0f1a14; --soft: #1f2d26; --warn: #f0a07f;
+            --tap: #ff8a4c; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
@@ -21,7 +23,7 @@
   h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 6px; }
   .lead { color: var(--muted); margin: 0 0 20px; }
   .lang { border: 1px solid var(--line); background: var(--card); color: var(--ink);
-          border-radius: 999px; padding: 6px 12px; font: inherit; font-size: .9rem; cursor: pointer; }
+          border-radius: 999px; padding: 6px 12px; font: inherit; font-size: .9rem; cursor: pointer; flex: none; }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
             padding: 18px; margin: 14px 0; }
   h2 { font-size: 1.1rem; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
@@ -36,23 +38,69 @@
   button.main, button.ghost { font: inherit; font-weight: 600; border-radius: 10px; padding: 12px 16px; cursor: pointer; }
   button.main { background: var(--accent); color: var(--accent-ink); border: 0; }
   button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  button:disabled { opacity: .35; cursor: default; }
   button.wide { width: 100%; margin-top: 14px; }
-  ol.how { padding-left: 1.2rem; margin: 6px 0 0; }
-  ol.how li { margin: 4px 0; }
   .hint { color: var(--muted); font-size: .92rem; margin: 6px 0 0; }
+  .do { margin: 4px 0 0; }
   .err { color: var(--warn); font-size: .95rem; margin: 8px 0 0; min-height: 1px; }
   .places { list-style: none; padding: 0; margin: 10px 0 0; }
   .places button { width: 100%; text-align: left; font: inherit; color: var(--ink); background: var(--bg);
                    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 4px 0; cursor: pointer; }
-  .places button[aria-pressed="true"] { border-color: var(--accent); background: var(--soft); }
-  .picked { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--soft); }
+  .places button[aria-pressed="true"] { border-color: var(--accent); background: var(--soft); font-weight: 600; }
+  .places button[aria-pressed="true"]::after { content: "  ✓"; color: var(--accent); }
   details summary { cursor: pointer; font-weight: 600; }
   pre { white-space: pre-wrap; word-break: break-all; background: var(--bg); border: 1px solid var(--line);
         border-radius: 10px; padding: 12px; font-size: .85rem; margin: 10px 0; }
   .btns { display: flex; gap: 8px; flex-wrap: wrap; }
   .btns button { flex: 1; min-width: 140px; }
   #result { display: none; }
-  .ok { color: var(--accent); font-weight: 600; }
+
+  /* --- tap-by-tap guide --- */
+  .guide { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--bg); }
+  .gstep { font-size: .85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+  .gtext { font-size: 1.05rem; font-weight: 600; margin: 4px 0 12px; min-height: 3em; }
+  .gtext b { color: var(--tap); }
+  .phone { position: relative; width: 230px; height: 360px; margin: 0 auto; border-radius: 28px;
+           border: 8px solid #1b1b1f; background: #fff; color: #1f2328; overflow: hidden;
+           font-size: 13px; line-height: 1.3; box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .ph-top { background: var(--alexa); color: var(--alexa-ink); padding: 14px 12px 10px; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center; }
+  .ph-body { padding: 10px 12px; }
+  .ph-nav { position: absolute; left: 0; right: 0; bottom: 0; display: flex; border-top: 1px solid #ddd;
+            background: #fff; }
+  .ph-nav div { flex: 1; text-align: center; padding: 7px 0 9px; font-size: 9.5px; color: #555; }
+  .ph-nav i { display: block; font-style: normal; font-size: 16px; }
+  .ph-card { border-radius: 10px; background: #eef3f7; height: 54px; margin: 0 0 8px; }
+  .ph-list div { padding: 9px 4px; border-bottom: 1px solid #eee; }
+  .ph-search { border: 1px solid #bbb; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+  .ph-skill { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; }
+  .ph-icon { width: 42px; height: 42px; border-radius: 10px; background: #f5b800; display: grid;
+             place-items: center; font-size: 20px; flex: none; }
+  .ph-btn { background: var(--alexa-blue); color: #fff; text-align: center; font-weight: 700;
+            border-radius: 20px; padding: 10px; margin-top: 16px; font-size: 12px; }
+  .ph-mail { border-bottom: 1px solid #eee; padding: 8px 2px; }
+  .ph-mail small { color: #666; display: block; }
+  .ph-code { font-family: ui-monospace, monospace; background: #fff6d6; padding: 6px; border-radius: 6px;
+             word-break: break-all; margin-top: 8px; }
+  .tap { position: relative; outline: 3px solid var(--tap); outline-offset: 2px; border-radius: 10px;
+         animation: pulse 1.4s ease-in-out infinite; }
+  .tap::after { content: "👆"; position: absolute; right: 8px; bottom: -22px; font-size: 26px;
+                animation: poke 1.4s ease-in-out infinite; z-index: 2; }
+  .ph-nav .tap { outline-offset: -3px; }
+  .ph-nav .tap::after { content: "👇"; bottom: auto; top: -34px; right: 50%; margin-right: -13px; }
+  @keyframes pulse { 50% { outline-color: transparent; } }
+  @keyframes poke { 50% { transform: translateY(-5px); } }
+  @media (prefers-reduced-motion: reduce) { .tap, .tap::after { animation: none; } }
+  .echo { display: grid; place-items: center; height: 100%; background: #f2f5f8; }
+  .echo-dev { width: 90px; height: 90px; border-radius: 50%; background: #2c2f33;
+              box-shadow: 0 0 0 6px var(--alexa-blue); margin-top: 30px; }
+  .bubble { background: #fff; border: 2px solid var(--tap); border-radius: 16px; padding: 10px 14px;
+            font-weight: 700; font-size: 15px; text-align: center; margin: 0 10px; }
+  .gnav { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+  .gnav button { flex: 1; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dots span.on { background: var(--accent); }
 </style>
 </head>
 <body>
@@ -74,6 +122,7 @@
 
   <section>
     <h2><span class="n">2</span><span data-t="s2"></span></h2>
+    <p class="do" data-t="townDo"></p>
     <label for="town" data-t="townLabel"></label>
     <div class="row">
       <input id="town" autocomplete="off">
@@ -91,13 +140,22 @@
 
   <section>
     <h2><span class="n">3</span><span data-t="s3"></span></h2>
-    <ol class="how">
-      <li data-t="nm1"></li>
-      <li data-t="nm2"></li>
-      <li data-t="nm3"></li>
-    </ol>
+    <p class="hint" data-t="guideIntro"></p>
+    <div class="guide">
+      <div class="gstep" id="gstep"></div>
+      <div class="gtext" id="gtext"></div>
+      <div class="phone" id="phone" aria-hidden="true"></div>
+      <div class="dots" id="dots"></div>
+      <div class="gnav">
+        <button class="ghost" id="prev" type="button" data-t="prev"></button>
+        <button class="main" id="next" type="button" data-t="next"></button>
+      </div>
+    </div>
     <label for="code" data-t="codeLabel"></label>
-    <input id="code" autocomplete="off" spellcheck="false">
+    <div class="row">
+      <input id="code" autocomplete="off" spellcheck="false">
+      <button class="ghost" id="paste" type="button" data-t="paste"></button>
+    </div>
     <p class="hint" data-t="nmHint"></p>
   </section>
 
@@ -122,6 +180,7 @@
       <button class="ghost" id="copy" type="button" data-t="copy"></button>
     </div>
     <p class="hint" id="copied"></p>
+    <p class="hint" id="sendHow"></p>
     <p class="hint" data-t="after"></p>
   </section>
 </main>
@@ -130,63 +189,139 @@
 const T = {
   fr: {
     title: "Ouvre les fenêtres",
-    lead: "Ton Echo t'avertit quand c'est le bon moment pour ouvrir les fenêtres, et te rappelle de les fermer s'il va pleuvoir ou faire froid. Ça prend 5 minutes.",
+    lead: "Ton Echo t'avertit quand c'est le bon moment pour ouvrir les fenêtres, et te rappelle de les fermer s'il va pleuvoir ou faire froid. Ça prend 5 minutes, sur ton téléphone.",
     s1: "Ton nom", nameLabel: "Un nom pour ta maison", nameHint: "Ex. : Maman, Julie, Chalet. Lettres et chiffres seulement.",
-    s2: "Ta ville", townLabel: "Nom de ta ville", search: "Chercher",
+    s2: "Ta ville",
+    townDo: "Écris le nom de ta ville, appuie sur « Chercher », puis touche ta ville dans la liste (un ✓ vert apparaît).",
+    townLabel: "Nom de ta ville", search: "Chercher",
     manual: "Ta ville n'apparaît pas?", lat: "Latitude", lon: "Longitude",
     manualHint: "Dans Google Maps, appuie longtemps sur ta maison : les deux nombres en haut sont la latitude et la longitude.",
-    s3: "Ton Echo",
-    nm1: "Dans l'app Alexa : Plus → Skills et jeux → cherche « Notify Me » → Activer.",
-    nm2: "Dis à ton Echo : « Alexa, open Notify Me » (en anglais).",
-    nm3: "Tu reçois un courriel d'Amazon avec ton « access code ». Copie-le ici.",
-    codeLabel: "Ton code Notify Me", nmHint: "Quand une alerte arrive, ton Echo s'allume en jaune. Demande : « Alexa, quelles sont mes notifications? »",
+    s3: "Ton Echo (app Alexa)",
+    guideIntro: "Suis les images. Le cercle orange 👆 montre où appuyer. Les mots peuvent varier un peu selon ta version de l'app.",
+    prev: "◀ Retour", next: "Suivant ▶", done: "Terminé ✓", stepOf: (i, n) => `Étape ${i} de ${n}`,
+    codeLabel: "Colle ton code ici", paste: "Coller",
+    nmHint: "Quand une alerte arrive, ton Echo s'allume en jaune. Demande : « Alexa, quelles sont mes notifications? »",
     vmTitle: "Option : Echo Show qui parle (Voice Monkey)",
     vmHint: "Seulement si tu as déjà un compte voicemonkey.io avec un appareil « Speaker ». Sinon, laisse vide.",
     vmToken: "Token Voice Monkey", vmDevice: "ID de l'appareil",
     make: "Créer mon code",
-    s4: "Envoie-le", sendIt: "Envoie ce message à la personne qui t'a donné ce lien. C'est tout!",
-    share: "Envoyer", copy: "Copier", copied: "Copié ✓",
+    s4: "Envoie-le", sendIt: "Dernière étape : envoie ce message à la personne qui t'a donné ce lien. C'est tout!",
+    share: "Envoyer", copy: "Copier", copied: "Copié ✓ Colle-le dans un texto ou un courriel.",
+    sendShare: "Appuie sur « Envoyer », choisis Messages (ou Messenger, courriel…), choisis la personne, puis envoie.",
+    sendCopy: "Appuie sur « Copier », ouvre tes textos ou tes courriels, appuie longtemps dans la zone de texte → Coller, puis envoie.",
     after: "Garde ce code pour toi : il permet d'envoyer des notifications à ton Echo.",
-    errName: "Écris un nom (lettres ou chiffres).", errTown: "Choisis ta ville (étape 2).",
+    errName: "Écris un nom (étape 1).", errTown: "Choisis ta ville dans la liste (étape 2).",
     errCode: "Colle ton code Notify Me (étape 3), ou remplis Voice Monkey.",
     errSearch: "Aucune ville trouvée. Vérifie l'orthographe ou utilise « Ta ville n'apparaît pas? ».",
     errNet: "La recherche ne marche pas en ce moment. Utilise « Ta ville n'apparaît pas? ».",
-    picked: "Choisi : ", msgHead: "Ouvre les fenêtres : nouvelle maison", secretName: "Nom du secret", value: "Valeur",
+    errPaste: "Ton téléphone bloque « Coller » ici : appuie longtemps dans la case, puis « Coller ».",
+    msgHead: "Ouvre les fenêtres : nouvelle maison", secretName: "Nom du secret", value: "Valeur",
+    app: { home: "Accueil", comm: "Communiquer", play: "Écouter", dev: "Appareils", more: "Plus",
+           add: "Ajouter un appareil", lists: "Listes et notes", rem: "Rappels", alarms: "Alarmes",
+           skills: "Skills et jeux", settings: "Paramètres", enable: "ACTIVER POUR UTILISATION",
+           by: "Thomptronics", inbox: "Boîte de réception", subject: "Ton code d'accès Notify Me",
+           code: "ton code est ici", hold: "appui long → Copier" },
+    steps: [
+      ["Ouvre l'app <b>Amazon Alexa</b> sur ton téléphone. En bas à droite, appuie sur <b>Plus</b>.", "home"],
+      ["Appuie sur <b>Skills et jeux</b>.", "more"],
+      ["En haut à droite, appuie sur la <b>loupe 🔍</b>.", "skills"],
+      ["Écris <b>Notify Me</b>, puis touche le résultat <b>Notify Me</b> (icône jaune).", "search"],
+      ["Appuie sur le gros bouton bleu <b>Activer pour utilisation</b>. Rien d'autre à faire dans l'app.", "enable"],
+      ["Va près de ton Echo et dis, en anglais : <b>« Alexa, open Notify Me »</b>. Alexa te dit qu'elle t'envoie un courriel.", "say"],
+      ["Ouvre tes courriels (celui de ton compte Amazon). Ouvre le courriel de <b>Notify Me</b>. <b>Appui long</b> sur le code → <b>Copier</b>. Reviens ici et appuie sur <b>Coller</b> plus bas.", "mail"],
+    ],
   },
   en: {
     title: "Open the windows",
-    lead: "Your Echo tells you when it's a good time to open the windows, and reminds you to close them before rain or cold. Takes 5 minutes.",
+    lead: "Your Echo tells you when it's a good time to open the windows, and reminds you to close them before rain or cold. Takes 5 minutes, on your phone.",
     s1: "Your name", nameLabel: "A name for your home", nameHint: "E.g. Mom, Julie, Cottage. Letters and numbers only.",
-    s2: "Your town", townLabel: "Town name", search: "Search",
+    s2: "Your town",
+    townDo: "Type your town, tap \"Search\", then tap your town in the list (a green ✓ appears).",
+    townLabel: "Town name", search: "Search",
     manual: "Can't find your town?", lat: "Latitude", lon: "Longitude",
     manualHint: "In Google Maps, long-press your home: the two numbers at the top are latitude and longitude.",
-    s3: "Your Echo",
-    nm1: "In the Alexa app: More → Skills & Games → search \"Notify Me\" → Enable.",
-    nm2: "Say to your Echo: \"Alexa, open Notify Me\".",
-    nm3: "Amazon emails you an \"access code\". Paste it here.",
-    codeLabel: "Your Notify Me code", nmHint: "When an alert arrives your Echo glows yellow. Ask: \"Alexa, what are my notifications?\"",
+    s3: "Your Echo (Alexa app)",
+    guideIntro: "Follow the pictures. The orange circle 👆 shows where to tap. Words may differ a little in your version of the app.",
+    prev: "◀ Back", next: "Next ▶", done: "Done ✓", stepOf: (i, n) => `Step ${i} of ${n}`,
+    codeLabel: "Paste your code here", paste: "Paste",
+    nmHint: "When an alert arrives your Echo glows yellow. Ask: \"Alexa, what are my notifications?\"",
     vmTitle: "Optional: talking Echo Show (Voice Monkey)",
     vmHint: "Only if you already have a voicemonkey.io account with a \"Speaker\" device. Otherwise leave empty.",
     vmToken: "Voice Monkey token", vmDevice: "Device ID",
     make: "Make my code",
-    s4: "Send it", sendIt: "Send this message to whoever gave you this link. That's it!",
-    share: "Send", copy: "Copy", copied: "Copied ✓",
+    s4: "Send it", sendIt: "Last step: send this message to whoever gave you this link. That's it!",
+    share: "Send", copy: "Copy", copied: "Copied ✓ Paste it in a text or email.",
+    sendShare: "Tap \"Send\", pick Messages (or Messenger, email…), pick the person, then send.",
+    sendCopy: "Tap \"Copy\", open your texts or email, long-press in the message box → Paste, then send.",
     after: "Keep this code private: it lets anyone send notifications to your Echo.",
-    errName: "Type a name (letters or numbers).", errTown: "Pick your town (step 2).",
+    errName: "Type a name (step 1).", errTown: "Pick your town in the list (step 2).",
     errCode: "Paste your Notify Me code (step 3), or fill in Voice Monkey.",
     errSearch: "No town found. Check the spelling or use \"Can't find your town?\".",
     errNet: "Search isn't working right now. Use \"Can't find your town?\".",
-    picked: "Picked: ", msgHead: "Open the windows: new home", secretName: "Secret name", value: "Value",
+    errPaste: "Your phone blocks \"Paste\" here: long-press in the box, then \"Paste\".",
+    msgHead: "Open the windows: new home", secretName: "Secret name", value: "Value",
+    app: { home: "Home", comm: "Communicate", play: "Play", dev: "Devices", more: "More",
+           add: "Add a Device", lists: "Lists & Notes", rem: "Reminders", alarms: "Alarms",
+           skills: "Skills & Games", settings: "Settings", enable: "ENABLE TO USE",
+           by: "Thomptronics", inbox: "Inbox", subject: "Your Notify Me access code",
+           code: "your code is here", hold: "long-press → Copy" },
+    steps: [
+      ["Open the <b>Amazon Alexa</b> app on your phone. Bottom right, tap <b>More</b>.", "home"],
+      ["Tap <b>Skills &amp; Games</b>.", "more"],
+      ["Top right, tap the <b>magnifying glass 🔍</b>.", "skills"],
+      ["Type <b>Notify Me</b>, then tap the <b>Notify Me</b> result (yellow icon).", "search"],
+      ["Tap the big blue <b>Enable to use</b> button. Nothing else to do in the app.", "enable"],
+      ["Go near your Echo and say: <b>\"Alexa, open Notify Me\"</b>. Alexa says she's emailing you.", "say"],
+      ["Open your email (the one on your Amazon account). Open the email from <b>Notify Me</b>. <b>Long-press</b> the code → <b>Copy</b>. Come back here and tap <b>Paste</b> below.", "mail"],
+    ],
   },
 };
-let lang = "fr", place = null, message = "";
+
+// Drawn Alexa app screens. `tap` marks what to press.
+function screen(kind, a) {
+  const nav = (hl) => `<div class="ph-nav">${[["⌂", a.home], ["💬", a.comm], ["▶", a.play], ["💡", a.dev], ["☰", a.more]]
+    .map(([i, l], k) => `<div class="${hl && k === 4 ? "tap" : ""}"><i>${i}</i>${l}</div>`).join("")}</div>`;
+  const top = (t, right = "") => `<div class="ph-top"><span>${t}</span>${right}</div>`;
+  switch (kind) {
+    case "home": return top("alexa") + `<div class="ph-body"><div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div></div>` + nav(true);
+    case "more": return top(a.more) + `<div class="ph-body ph-list">
+        <div>${a.add}</div><div>${a.lists}</div><div>${a.rem}</div><div>${a.alarms}</div>
+        <div class="tap">🎮 ${a.skills}</div><div>⚙ ${a.settings}</div></div>` + nav(false);
+    case "skills": return top(a.skills, `<span class="tap" style="padding:2px 6px">🔍</span>`)
+        + `<div class="ph-body"><div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div></div>` + nav(false);
+    case "search": return top(a.skills) + `<div class="ph-body"><div class="ph-search">🔍 Notify Me</div>
+        <div class="ph-skill tap"><div class="ph-icon">🔔</div><div><b>Notify Me</b><br><small>${a.by}</small><br>★★★★☆</div></div></div>` + nav(false);
+    case "enable": return top("Notify Me") + `<div class="ph-body"><div class="ph-skill"><div class="ph-icon">🔔</div>
+        <div><b>Notify Me</b><br><small>${a.by}</small></div></div><div class="ph-btn tap">${a.enable}</div></div>`;
+    case "say": return `<div class="echo"><div class="echo-dev"></div><div class="bubble">“Alexa, open Notify Me”</div></div>`;
+    case "mail": return top(a.inbox) + `<div class="ph-body"><div class="ph-mail"><b>Notify Me</b><small>${a.subject}</small></div>
+        <div class="ph-code tap">••••••••••••••••<br><small>${a.code}</small></div>
+        <p style="margin-top:34px;color:#666;font-size:12px">${a.hold}</p></div>`;
+  }
+}
+
+let lang = "fr", place = null, message = "", gi = 0;
 const $ = (id) => document.getElementById(id);
+
+function drawGuide() {
+  const t = T[lang], n = t.steps.length, [text, kind] = t.steps[gi];
+  $("gstep").textContent = t.stepOf(gi + 1, n);
+  $("gtext").innerHTML = text;
+  $("phone").innerHTML = screen(kind, t.app);
+  $("dots").innerHTML = t.steps.map((_, k) => `<span class="${k === gi ? "on" : ""}"></span>`).join("");
+  $("prev").disabled = gi === 0;
+  $("next").textContent = gi === n - 1 ? t.done : t.next;
+}
+$("prev").onclick = () => { if (gi > 0) { gi--; drawGuide(); } };
+$("next").onclick = () => {
+  if (gi < T[lang].steps.length - 1) { gi++; drawGuide(); } else { $("code").focus(); }
+};
 
 function render() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = T[lang][el.dataset.t]; });
   $("lang").textContent = lang === "fr" ? "English" : "Français";
-  if (place) showPicked();
+  drawGuide();
   if (message) build();
 }
 $("lang").onclick = () => { lang = lang === "fr" ? "en" : "fr"; render(); };
@@ -198,7 +333,7 @@ function slug(s) {
 
 async function search() {
   const q = $("town").value.trim();
-  $("townErr").textContent = ""; $("places").innerHTML = "";
+  $("townErr").textContent = ""; $("places").innerHTML = ""; place = null;
   if (!q) return;
   try {
     const url = "https://geocoding-api.open-meteo.com/v1/search?count=6&format=json&language=" + lang
@@ -210,17 +345,21 @@ async function search() {
       b.type = "button";
       b.textContent = [r.name, r.admin1, r.country].filter(Boolean).join(", ");
       b.onclick = () => {
-        place = { label: b.textContent, lat: r.latitude, lon: r.longitude, tz: r.timezone || "America/Toronto" };
+        place = { lat: r.latitude, lon: r.longitude, tz: r.timezone || "America/Toronto" };
         document.querySelectorAll(".places button").forEach((x) => x.setAttribute("aria-pressed", x === b));
-        showPicked();
       };
       li.appendChild(b); $("places").appendChild(li);
     });
+    if (j.results.length === 1) $("places").querySelector("button").click();
   } catch (e) { $("townErr").textContent = T[lang].errNet; $("manual").open = true; }
 }
-function showPicked() { $("townErr").textContent = ""; }
 $("search").onclick = search;
 $("town").addEventListener("keydown", (e) => { if (e.key === "Enter") search(); });
+
+$("paste").onclick = async () => {
+  try { $("code").value = (await navigator.clipboard.readText()).trim(); }
+  catch (e) { $("makeErr").textContent = T[lang].errPaste; $("code").focus(); }
+};
 
 function where() {
   const lat = parseFloat($("lat").value.replace(",", ".")), lon = parseFloat($("lon").value.replace(",", "."));
@@ -242,6 +381,7 @@ function build() {
   message = t.msgHead + "\n" + t.secretName + ": HOME_" + id + "\n" + t.value + ":\n" + JSON.stringify(home);
   $("out").textContent = message;
   $("share").style.display = navigator.share ? "" : "none";
+  $("sendHow").textContent = navigator.share ? t.sendShare : t.sendCopy;
   $("result").style.display = "block";
 }
 $("make").onclick = () => { build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
