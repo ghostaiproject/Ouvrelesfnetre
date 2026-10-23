@@ -44,6 +44,7 @@ CONFIG = {
     "mode_default": "auto",        # auto = silent ping always, spoken too if optimal
     "indoor_margin": 2.0,          # FUTURE HOOK: outside must be this much cooler than inside
     "chime": "",                   # spoken mode: sound before speech (or VOICEMONKEY_CHIME)
+    "display_seconds": 60,         # spoken mode: how long the text stays on the Echo Show screen
 }
 STATE_FILE = Path(__file__).parent / "state.json"
 API = "https://api.open-meteo.com/v1/forecast"
@@ -157,6 +158,8 @@ def _announce(title, text):
         "token": os.environ["VOICEMONKEY_TOKEN"],
         "device": os.environ["VOICEMONKEY_DEVICE"],
         "speech": f"{title}. {text}",
+        "text_display": f"{title}\n{text}",  # shown on the Echo Show screen
+        "display_seconds": CONFIG["display_seconds"],
     }
     chime = os.environ.get("VOICEMONKEY_CHIME") or CONFIG["chime"]
     if chime:
