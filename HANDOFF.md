@@ -16,19 +16,18 @@ Friends-and-family release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
-## UPDATE (2026-10-22 night): guides rebuilt to the chat-navigation flow
-`Enable Notify Me` / `Enable Voice Monkey` typed in Ask Alexa did not work for everyone. Guides now follow real Alexa+ screenshots:
-Ask Alexa bar -> type `Skill` -> tap button "Alexa Skills & Integrations" -> search bar -> tap result -> Enable to use.
-Routines: type `Navigate to the settings page for: routines` -> tap "Manage Routines" -> ⊕.
-Notify Me guide = 8 steps (then `Open Notify Me` typed or spoken, then email). Voice Monkey guide = 18 steps (routine steps are 11-16; the "redo the routine" test message says so).
-Not verified on a real phone: Notify Me result row/enable screen is drawn from the Voice Monkey layout; the screen after "Manage Routines" is drawn as the Routines tab page.
+## UPDATE (2026-10-22 night): guides use the app menus only, no Alexa+ chat
+Owner's call: do NOT use Alexa+ chat (typing "Enable Notify Me" did not work; chat-navigation version a811bf7 replaced).
+Skills: home ≡ menu top left -> More -> Skills & Games tile -> "Search Alexa Skills" bar -> result -> Enable to use.
+Notify Me guide = 7 steps (step 6: say "Alexa, open Notify Me" to the Echo, then email). Voice Monkey = 14 steps
+(routine = steps 7-12: ≡ -> Routines tile -> ⊕ -> WHEN Add an event -> ALEXA WILL Add an action -> Save).
 
 ## Open / NOT verified
 - First scheduled multi-home run not seen yet (state.json still old flat format; it migrates to
   `{"heartbeat", "homes": {...}}` on the next run).
 - Guide screens redrawn 2026-10-22 for the new dark Alexa+ app from real (English) phone screenshots:
   More = tile grid, Skills & Games = "Discover Alexa" with search bar on top, Routines ⊕ top right,
-  New Routine = WHEN "Add an event" / ALEXA WILL "Add an action" + big Save at bottom. Notify Me guide is now 4 steps via Alexa+ chat ("Enable Notify Me", "Open Notify Me" typed in the Ask Alexa bar; English only); Voice Monkey 14 steps. Home = ≡ menu top left -> More. Not verified that Alexa+ enables skills from chat.
+  New Routine = WHEN "Add an event" / ALEXA WILL "Add an action" + big Save at bottom. Home = ≡ menu top left -> More.
 - Guide screens are drawings: French Alexa menu names (esp. routine: "Lorsque ceci se produit",
   "Maison intelligente", "À partir de") not checked on a real phone.
 - No friend home added yet; no real Notify Me test for a HOME_ secret.
