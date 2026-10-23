@@ -116,5 +116,5 @@ Code tab and **Deploy** again. The skill doesn't update by itself.
 ## Limits
 
 - The skill stays in Development mode: it works on this Amazon account's
-  Echos only. Friends would need beta-test invites (Distribution → Beta Test).
+  Echos only. Other people would need beta-test invites (Distribution → Beta Test).
 - It uses your home (CONFIG lat/lon in `alert.py`).

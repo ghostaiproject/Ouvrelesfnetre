@@ -6,7 +6,7 @@ on:
   workflow_dispatch:   # tapping "Run workflow" = send ONE test alert now
     inputs:
       home:
-        description: "Which home gets the test: main (yours), a name like mom (Echo or phone), or all"
+        description: "Which home gets the test: main (yours), a name like chalet (Echo or phone), or all"
         default: main
 
 permissions:

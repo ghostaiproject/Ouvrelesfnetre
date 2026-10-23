@@ -161,20 +161,20 @@ def test_announce_shows_text_on_screen(monkeypatch):
     assert sent["display_seconds"] == alert.CONFIG["display_seconds"]
 
 
-FRIEND = '{"name": "Mom", "lat": 46.81, "lon": -71.21, "tz": "America/Toronto", "notifyme": "abc"}'
+OTHER = '{"name": "Cottage", "lat": 46.81, "lon": -71.21, "tz": "America/Toronto", "notifyme": "abc"}'
 
 
-def test_load_homes_main_plus_friends():
+def test_load_homes_main_plus_others():
     env = {"NOTIFYME_ACCESS_CODE": "mine", "MODE": "announce",
-           "ALL_SECRETS": json.dumps({"HOME_MOM": FRIEND, "HOME_BAD": "oops",
+           "ALL_SECRETS": json.dumps({"HOME_COTTAGE": OTHER, "HOME_BAD": "oops",
                                       "VOICEMONKEY_TOKEN": "x", "GITHUB_TOKEN": "y"})}
     homes = alert.load_homes(env)
-    assert [h["id"] for h in homes] == ["main", "mom"]   # broken code skipped
-    main, mom = homes
+    assert [h["id"] for h in homes] == ["main", "cottage"]   # broken code skipped
+    main, cot = homes
     assert main["notifyme"] == "mine" and main["mode"] == "announce"
-    assert mom["name"] == "Mom" and mom["lat"] == 46.81 and mom["notifyme"] == "abc"
-    assert mom["mode"] == "auto" and mom["vm_token"] == ""
-    assert alert.home_cfg(mom)["lat"] == 46.81 and alert.home_cfg(mom)["temp_min"] == 15.0
+    assert cot["name"] == "Cottage" and cot["lat"] == 46.81 and cot["notifyme"] == "abc"
+    assert cot["mode"] == "auto" and cot["vm_token"] == ""
+    assert alert.home_cfg(cot)["lat"] == 46.81 and alert.home_cfg(cot)["temp_min"] == 15.0
     assert [h["id"] for h in alert.load_homes({})] == ["main"]
 
 
@@ -203,7 +203,7 @@ def test_old_state_file_becomes_main(tmp_path, monkeypatch):
 
 def test_one_broken_home_does_not_stop_others(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
-    monkeypatch.setenv("ALL_SECRETS", json.dumps({"HOME_MOM": FRIEND}))
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"HOME_COTTAGE": OTHER}))
     monkeypatch.delenv("FORCE_TEST", raising=False)
     monkeypatch.delenv("DRY_RUN", raising=False)
     seen = []
@@ -216,21 +216,21 @@ def test_one_broken_home_does_not_stop_others(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setattr(alert, "run_home", fake_run)
     assert alert.main() == 1
-    assert seen == ["main", "mom"]
+    assert seen == ["main", "cottage"]
     assert "SECRET" not in capsys.readouterr().err   # error text is never printed
     saved = json.loads((tmp_path / "state.json").read_text())
-    assert saved["homes"]["mom"]["open"] is True     # mom's state still saved
+    assert saved["homes"]["cottage"]["open"] is True     # cottage's state still saved
     assert saved["homes"]["main"] == alert.BLANK     # main left as it was
 
 
 def test_test_alert_only_goes_to_chosen_home(tmp_path, monkeypatch):
     monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
-    monkeypatch.setenv("ALL_SECRETS", json.dumps({"HOME_MOM": FRIEND}))
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"HOME_COTTAGE": OTHER}))
     monkeypatch.setenv("FORCE_TEST", "1")
     seen = []
     monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
-    monkeypatch.setenv("TEST_HOME", "Mom")
-    assert alert.main() == 0 and seen == ["mom"]
+    monkeypatch.setenv("TEST_HOME", "Cottage")
+    assert alert.main() == 0 and seen == ["cottage"]
     seen.clear()
     monkeypatch.delenv("TEST_HOME")
     assert alert.main() == 0 and seen == ["main"]
@@ -268,10 +268,10 @@ def test_french_messages():
 
 
 def test_homes_carry_their_language():
-    fr = json.dumps({**json.loads(FRIEND), "lang": "fr"})
+    fr = json.dumps({**json.loads(OTHER), "lang": "fr"})
     homes = alert.load_homes({"ALERT_LANG": "FR", "ALL_SECRETS": json.dumps(
-        {"HOME_MOM": FRIEND, "HOME_JULIE": fr})})
-    assert {h["id"]: h["lang"] for h in homes} == {"main": "fr", "julie": "fr", "mom": "en"}
+        {"HOME_COTTAGE": OTHER, "HOME_CONDO": fr})})
+    assert {h["id"]: h["lang"] for h in homes} == {"main": "fr", "condo": "fr", "cottage": "en"}
     assert alert.load_homes({})[0]["lang"] == "en"
 
 
@@ -288,14 +288,14 @@ def test_sun_jokes_only_when_sunny():
 
 
 def test_compact_home_code():
-    code = json.dumps({"n": "Julie", "p": [46.813, -71.208], "l": "fr", "c": "abc"})
+    code = json.dumps({"n": "Condo", "p": [46.813, -71.208], "l": "fr", "c": "abc"})
     vm_only = json.dumps({"n": "Chalet", "p": [45.5, -73.6], "l": "en", "z": "America/Halifax",
                           "t": "tok", "d": "echo-1"})
     homes = {h["id"]: h for h in alert.load_homes({"ALL_SECRETS": json.dumps(
-        {"HOME_JULIE": code, "HOME_CHALET": vm_only})})}
-    j, c = homes["julie"], homes["chalet"]
+        {"HOME_CONDO": code, "HOME_CHALET": vm_only})})}
+    j, c = homes["condo"], homes["chalet"]
     assert (j["name"], j["lat"], j["lon"], j["lang"], j["notifyme"], j["mode"], j["tz"]) == \
-        ("Julie", 46.813, -71.208, "fr", "abc", "auto", "America/Toronto")
+        ("Condo", 46.813, -71.208, "fr", "abc", "auto", "America/Toronto")
     assert (c["mode"], c["tz"], c["vm_token"], c["vm_device"], c["notifyme"]) == \
         ("announce", "America/Halifax", "tok", "echo-1", "")
 
@@ -313,14 +313,14 @@ def test_answer_should_i_open():
     assert "kilomètres à l'heure" in alert.answer({**GOOD, "wind": 40}, late, "fr")
 
 
-GFRIEND = '{"n": "Maman", "p": [46.81, -71.21], "l": "fr", "g": "fenetres-abc123"}'
+PHONE_CODE = '{"n": "Chalet", "p": [46.81, -71.21], "l": "fr", "g": "fenetres-abc123"}'
 
 
 def test_phone_homes_get_pushes(monkeypatch):
-    env = {"ALL_SECRETS": json.dumps({"PHONE_MAMAN": GFRIEND, "HOME_MOM": FRIEND, "GHOME_OLD": GFRIEND,
+    env = {"ALL_SECRETS": json.dumps({"PHONE_CHALET": PHONE_CODE, "HOME_COTTAGE": OTHER, "GHOME_OLD": PHONE_CODE,
                                       "GHOME_BAD": '{"n": "x"}', "GHOME_SLASH": '{"p": [1, 2], "g": "a/b"}'})}
     homes = alert.load_homes(env)
-    assert [h["id"] for h in homes] == ["main", "p-old", "mom", "p-maman"]   # broken codes skipped, old GHOME_ read
+    assert [h["id"] for h in homes] == ["main", "p-old", "cottage", "p-chalet"]   # broken codes skipped, old GHOME_ read
     g = homes[3]
     assert g["mode"] == "push" and g["ntfy"] == "fenetres-abc123" and g["lang"] == "fr"
     assert g["lat"] == 46.81 and g["tz"] == "America/Toronto" and g["notifyme"] == ""
@@ -353,9 +353,9 @@ def test_ntfy_payload(monkeypatch):
 
 def test_test_alert_finds_phone_home_by_name(tmp_path, monkeypatch):
     monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
-    monkeypatch.setenv("ALL_SECRETS", json.dumps({"PHONE_MAMAN": GFRIEND}))
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"PHONE_CHALET": PHONE_CODE}))
     monkeypatch.setenv("FORCE_TEST", "1")
     seen = []
     monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
-    monkeypatch.setenv("TEST_HOME", "maman")
-    assert alert.main() == 0 and seen == ["p-maman"]
+    monkeypatch.setenv("TEST_HOME", "chalet")
+    assert alert.main() == 0 and seen == ["p-chalet"]
