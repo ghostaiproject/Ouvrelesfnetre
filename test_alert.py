@@ -311,3 +311,51 @@ def test_answer_should_i_open():
     assert "too warm" in alert.answer({**GOOD, "temp": 25}, late, "en")
     assert "too dry" in alert.answer({**GOOD, "humidity": 20}, late, "en")
     assert "kilomètres à l'heure" in alert.answer({**GOOD, "wind": 40}, late, "fr")
+
+
+GFRIEND = '{"n": "Maman", "p": [46.81, -71.21], "l": "fr", "g": "fenetres-abc123"}'
+
+
+def test_google_homes_get_phone_pushes(monkeypatch):
+    env = {"ALL_SECRETS": json.dumps({"GHOME_MAMAN": GFRIEND, "HOME_MOM": FRIEND,
+                                      "GHOME_BAD": '{"n": "x"}', "GHOME_SLASH": '{"p": [1, 2], "g": "a/b"}'})}
+    homes = alert.load_homes(env)
+    assert [h["id"] for h in homes] == ["main", "g-maman", "mom"]   # broken Google codes skipped
+    g = homes[1]
+    assert g["mode"] == "push" and g["ntfy"] == "fenetres-abc123" and g["lang"] == "fr"
+    assert g["lat"] == 46.81 and g["tz"] == "America/Toronto" and g["notifyme"] == ""
+    calls = []
+    monkeypatch.setattr(alert, "_ntfy", lambda t, m, topic, kind: calls.append((topic, kind)))
+    monkeypatch.setattr(alert, "_notify_me", lambda *a: calls.append("nm"))
+    monkeypatch.setattr(alert, "_announce", lambda *a: calls.append("vm"))
+    alert.send(g, "t", "m", speak=False)
+    alert.send(g, "t", "m", speak=True, kind="rain")
+    assert calls == [("fenetres-abc123", "open"), ("fenetres-abc123", "rain")]
+
+
+def test_ntfy_payload(monkeypatch):
+    sent = {}
+
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+    def fake_post(url, timeout, json):
+        sent.update(json, url=url)
+        return Resp()
+
+    monkeypatch.setattr(alert.requests, "post", fake_post)
+    alert._ntfy("Fenêtre ouverte 19°", "Il fait doux", "fenetres-abc123", "cold")
+    assert sent["url"] == "https://ntfy.sh/" and sent["topic"] == "fenetres-abc123"
+    assert sent["title"] == "Fenêtre ouverte 19°" and sent["message"] == "Il fait doux"
+    assert sent["tags"] == ["snowflake"] and sent["priority"] == 4
+
+
+def test_test_alert_finds_google_home_by_name(tmp_path, monkeypatch):
+    monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"GHOME_MAMAN": GFRIEND}))
+    monkeypatch.setenv("FORCE_TEST", "1")
+    seen = []
+    monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
+    monkeypatch.setenv("TEST_HOME", "maman")
+    assert alert.main() == 0 and seen == ["g-maman"]
