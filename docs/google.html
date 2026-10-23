@@ -85,6 +85,13 @@
   .chk { font-size: 11px; color: #444; margin-top: 8px; }
   .acts { display: flex; justify-content: flex-end; gap: 14px; margin-top: 12px; font-weight: 700;
           color: var(--ntfy); font-size: 12px; }
+  .dark { position: absolute; inset: 0; background: #121212; color: #ddd; }
+  .dbar { background: #1f252b; display: flex; justify-content: space-between; align-items: center; padding: 14px 10px; gap: 6px; }
+  .dbar b { font-weight: 500; font-size: 12px; white-space: nowrap; }
+  .dbar span { font-size: 11px; white-space: nowrap; }
+  .dmid { text-align: center; padding: 70px 14px 0; font-size: 12px; }
+  .dcode { font-family: ui-monospace, monospace; font-size: 10px; text-align: left; margin-top: 12px; color: #bbb; }
+  .dmsg { position: absolute; left: 10px; right: 10px; bottom: 10px; color: #888; font-size: 11px; }
   .notif { background: #eef1f4; border-radius: 14px; padding: 10px; margin: 8px; }
   .notif small { color: #666; display: block; }
   .shade { background: #2b2f36; position: absolute; inset: 0; color: #fff; }
@@ -207,7 +214,7 @@ const T = {
     steps: [
       ["Appuie sur le bouton vert <b>Installer ntfy</b> plus bas. Dans le Play Store, appuie sur <b>Installer</b>.", "store"],
       ["Reviens ici et appuie sur le bouton vert <b>S'abonner dans ntfy</b>.", "page"],
-      ["ntfy s'ouvre avec ton sujet déjà écrit. Appuie sur <b>S'abonner</b>. (Tu vois « Livraison instantanée »? Coche-la, c'est mieux.)", "dialog"],
+      ["ntfy s'ouvre et t'abonne tout seul. Tu vois l'écran <b>Ouvre les fenêtres</b> avec « You haven't received any notifications »? C'est bon!", "dialog"],
       ["Si ton téléphone demande la permission pour les notifications, appuie sur <b>Autoriser</b>.", "allow"],
       ["Reviens ici et appuie sur <b>🔔 Tester</b>. Une notification doit arriver en quelques secondes.", "notif"],
     ],
@@ -254,7 +261,7 @@ const T = {
     steps: [
       ["Tap the green <b>Install ntfy</b> button below. In the Play Store, tap <b>Install</b>.", "store"],
       ["Come back here and tap the green <b>Subscribe in ntfy</b> button.", "page"],
-      ["ntfy opens with your topic already filled in. Tap <b>Subscribe</b>. (See \"Instant delivery\"? Check it, it's better.)", "dialog"],
+      ["ntfy opens and subscribes you by itself. See the <b>Open the windows</b> screen with \"You haven't received any notifications\"? You're set!", "dialog"],
       ["If your phone asks about notifications, tap <b>Allow</b>.", "allow"],
       ["Come back here and tap <b>🔔 Test</b>. A notification should show up within seconds.", "notif"],
     ],
@@ -303,9 +310,9 @@ function screen(kind, a, t) {
       <div class="pbtn tap">${a.installBtn}</div></div>`;
     case "page": return `<div class="body"><b>${a.page}</b><div class="gbtn" style="margin-top:20px">${t.install}</div>
       <div class="gbtn tap">${t.subscribe}</div><div class="gbtn" style="background:#fff;color:var(--accent);border:1px solid var(--accent)">${t.test}</div></div>`;
-    case "dialog": return `<div class="bar"><span>ntfy</span><span>⋮</span></div><div class="dim"><div class="dlg">
-      <h5>${a.subTitle}</h5><div class="fld">${short}</div><div class="chk">☐ ${a.instant}</div>
-      <div class="acts"><span>${a.cancel}</span><span class="tap" style="padding:2px 4px">${a.sub}</span></div></div></div>`;
+    case "dialog": return `<div class="dark"><div class="dbar"><span>←</span><b class="tap" style="padding:2px 6px">${a.page}</b><span>🔍 🔔 ⋮</span></div>
+      <div class="dmid"><div style="font-size:28px">⌨</div>You haven't received any notifications for this topic yet.
+      <div class="dcode">$ curl -d "Hi" ntfy.sh/<br>${short}</div></div><div class="dmsg">Type a message here</div></div>`;
     case "allow": return `<div class="bar"><span>ntfy</span><span>⋮</span></div><div class="dim"><div class="dlg" style="text-align:center">
       <div style="font-size:22px">🔔</div><h5>${a.allowQ}</h5><div class="pbtn tap" style="margin-top:8px">${a.allow}</div>
       <div style="margin-top:8px;color:#0b57d0;font-weight:700">${a.deny}</div></div></div>`;
