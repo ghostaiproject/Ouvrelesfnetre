@@ -287,15 +287,11 @@ def _announce(title, text, token, device, chime=""):
     r.raise_for_status()
 
 
-NTFY_TAGS = {"open": ["house_with_garden"], "rain": ["umbrella"], "cold": ["snowflake"],
-             "test": ["white_check_mark"]}
-
-
 def _ntfy(title, text, topic, kind="open"):
-    """Phone push through ntfy.sh. JSON publish so accents in the title are safe."""
+    """Phone push through ntfy.sh. JSON publish so accents in the title are safe.
+    No emoji tags: phones set to read alerts aloud (MacroDroid) would speak them."""
     r = requests.post(NTFY_URL, timeout=15, json={
         "topic": topic, "title": title, "message": text,
-        "tags": NTFY_TAGS.get(kind, []),
         "priority": 4 if kind in ("rain", "cold") else 3,  # close reminders buzz a bit more
     })
     r.raise_for_status()
@@ -355,7 +351,8 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
     today = now.strftime("%Y-%m-%d")
     w = fetch_weather(cfg)
     lang = home.get("lang", "en")
-    title, msg = build_message(now.date(), w, spoken=home["mode"] == "announce", lang=lang)
+    # spoken wording ("19 degrees", not "19 C") also for phones, which may read alerts aloud
+    title, msg = build_message(now.date(), w, spoken=home["mode"] in ("announce", "push"), lang=lang)
     tag = f"[{home['id']}]"
 
     if force:

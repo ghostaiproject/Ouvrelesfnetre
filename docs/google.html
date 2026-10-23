@@ -105,6 +105,19 @@
   @keyframes pulse { 50% { outline-color: transparent; } }
   @keyframes poke { 50% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: reduce) { .tap, .tap::after { animation: none; } }
+  .mbox { border: 2px solid; border-radius: 10px; margin: 6px 0; display: flex; align-items: center; overflow: hidden; font-size: 11px; }
+  .mbox span { color: #fff; padding: 6px 8px; font-weight: 700; }
+  .mbox em { font-style: normal; padding: 0 8px; color: #444; }
+  .mlist { margin-top: 8px; border-top: 1px solid #eee; }
+  .mlist > div, .mlist > b { display: block; padding: 8px 4px; border-bottom: 1px solid #eee; }
+  .macts { text-align: right; color: #d32f2f; font-weight: 700; font-size: 12px; border: 0 !important; }
+  .mcard { height: 44px; border-radius: 10px; background: #f1f1f1; margin: 6px 0; }
+  .mfab { position: absolute; right: 16px; bottom: 54px; width: 44px; height: 44px; border-radius: 50%; background: #d32f2f;
+          color: #fff; display: grid; place-items: center; font-size: 22px; font-weight: 700; }
+  .mtabs { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; padding: 10px 0;
+           border-top: 1px solid #ddd; font-size: 11px; background: #fafafa; }
+  .mtabs b { color: #d32f2f; }
+  .mname { border-bottom: 2px solid #d32f2f; padding: 4px 2px; font-weight: 700; margin-bottom: 6px; }
   .gnav { display: flex; gap: 8px; margin-top: 14px; }
   .gnav button { flex: 1; }
   .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
@@ -173,6 +186,20 @@
     </details>
   </section>
 
+  <section>
+    <details id="mdBox">
+      <summary data-t="mdTitle"></summary>
+      <p class="hint" data-t="mdHint"></p>
+      <div class="guide" id="mdGuide"></div>
+      <a class="main wide" target="_blank" rel="noopener"
+         href="https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid" data-t="mdInstall"></a>
+      <label data-t="mdTextLabel"></label>
+      <div class="topic" id="mdText">[notification_title]. [notification]</div>
+      <button class="ghost wide" id="copyMd" type="button" data-t="mdCopy"></button>
+      <p class="hint" data-t="mdVoice"></p>
+    </details>
+  </section>
+
   <button class="main wide" id="make" type="button" data-t="make"></button>
   <p class="err" id="makeErr"></p>
 
@@ -219,12 +246,27 @@ const T = {
       ["Reviens ici et appuie sur <b>🔔 Tester</b>. Une notification doit arriver en quelques secondes.", "notif"],
     ],
     install: "Installer ntfy", subscribe: "S'abonner dans ntfy", test: "🔔 Tester",
-    testing: "Envoi…", testTitle: "Test réussi 🪟", testMsg: "Ton téléphone est prêt pour Ouvre les fenêtres!",
+    testing: "Envoi…", testTitle: "Test réussi", testMsg: "Ton téléphone est prêt pour Ouvre les fenêtres!",
     testSent: "Envoyé! La notification doit apparaître dans quelques secondes. Rien? Refais l'étape « S'abonner ».",
     testBad: "L'envoi n'a pas marché. Vérifie ta connexion et réessaie.",
     iphone: "Tu as un iPhone?",
     iphoneHow: "Installe ntfy depuis l'App Store. Dans ntfy, appuie sur +, colle ce sujet, puis « Subscribe ». Garde ce sujet secret : c'est l'adresse de tes alertes.",
     copyTopic: "Copier le sujet", topicCopied: "Copié ✓",
+    mdTitle: "Option : ton téléphone lit l'alerte à voix haute 🔊",
+    mdHint: "Avec l'app gratuite MacroDroid, ton téléphone dit chaque alerte à voix haute, comme un Echo. Environ 5 minutes. Les menus de MacroDroid sont souvent en anglais : les mots en orange sont ceux à toucher.",
+    mdInstall: "Installer MacroDroid", mdTextLabel: "Le texte à coller (étape 7)", mdCopy: "Copier le texte",
+    mdVoice: "Accent bizarre? Paramètres du téléphone → Gestion générale → Synthèse vocale → langue Français (Canada).",
+    mdSteps: [
+      ["Appuie sur <b>Installer MacroDroid</b> plus bas, puis sur <b>Installer</b> dans le Play Store. Ouvre l'app et passe l'accueil.", "mdStore"],
+      ["En bas, appuie sur l'onglet <b>Macros</b>, puis sur le bouton <b>+</b>.", "mdAdd"],
+      ["Dans la boîte rouge <b>Triggers</b>, appuie sur <b>+</b> → <b>Device Events</b> → <b>Notification</b>.", "mdTrig"],
+      ["Choisis <b>Notification Received</b> → OK → <b>Select Application</b> → OK. Coche <b>ntfy</b> → OK. Si on te demande l'accès aux notifications, donne-le à MacroDroid.", "mdApp"],
+      ["Pour le texte, choisis <b>Any</b> (n'importe lequel) → <b>OK</b>.", "mdAny"],
+      ["Dans la boîte bleue <b>Actions</b>, appuie sur <b>+</b> → <b>Media</b> → <b>Speak Text</b>.", "mdAct"],
+      ["Appuie sur <b>Copier le texte</b> plus bas, reviens dans MacroDroid, <b>colle-le</b> dans la case du texte, puis <b>OK</b>.", "mdSpeak"],
+      ["En haut, écris le nom <b>Fenêtres</b>, puis appuie sur le <b>✓</b> en bas à droite pour sauvegarder.", "mdSave"],
+      ["Reviens ici et appuie sur <b>🔔 Tester</b> (étape 3). Ton téléphone doit dire « Test réussi… » à voix haute.", "mdTest"],
+    ],
     make: "Créer mon code",
     s4: "Envoie-le", sendIt: "Dernière étape : envoie ce message à la personne qui t'a donné ce lien. C'est tout!",
     share: "Envoyer", copy: "Copier", copied: "Copié ✓ Colle-le dans un texto ou un courriel.",
@@ -238,7 +280,7 @@ const T = {
     msgHead: "Ouvre les fenêtres : nouvelle maison Google", secretName: "Nom du secret", value: "Valeur",
     app: { store: "Play Store", by: "Philipp Heckel", installBtn: "Installer", subTitle: "S'abonner au sujet",
            instant: "Livraison instantanée", cancel: "ANNULER", sub: "S'ABONNER", allowQ: "Autoriser ntfy à t'envoyer des notifications?",
-           allow: "Autoriser", deny: "Ne pas autoriser", now: "maintenant", page: "Ouvre les fenêtres" },
+           allow: "Autoriser", deny: "Ne pas autoriser", now: "maintenant", page: "Ouvre les fenêtres", mdName: "Fenêtres" },
   },
   en: {
     title: "Open the windows",
@@ -266,12 +308,27 @@ const T = {
       ["Come back here and tap <b>🔔 Test</b>. A notification should show up within seconds.", "notif"],
     ],
     install: "Install ntfy", subscribe: "Subscribe in ntfy", test: "🔔 Test",
-    testing: "Sending…", testTitle: "Test worked 🪟", testMsg: "Your phone is ready for Open the windows!",
+    testing: "Sending…", testTitle: "Test worked", testMsg: "Your phone is ready for Open the windows!",
     testSent: "Sent! The notification should appear within seconds. Nothing? Redo the \"Subscribe\" step.",
     testBad: "Sending didn't work. Check your connection and try again.",
     iphone: "Got an iPhone?",
     iphoneHow: "Install ntfy from the App Store. In ntfy, tap +, paste this topic, then \"Subscribe\". Keep this topic secret: it's the address of your alerts.",
     copyTopic: "Copy the topic", topicCopied: "Copied ✓",
+    mdTitle: "Optional: your phone reads the alert out loud 🔊",
+    mdHint: "With the free MacroDroid app, your phone says every alert out loud, like an Echo. About 5 minutes. The orange words are what to tap.",
+    mdInstall: "Install MacroDroid", mdTextLabel: "The text to paste (step 7)", mdCopy: "Copy the text",
+    mdVoice: "Weird accent? Phone Settings → General management → Text-to-speech → pick the language of your alerts.",
+    mdSteps: [
+      ["Tap <b>Install MacroDroid</b> below, then <b>Install</b> in the Play Store. Open the app and skip the welcome screens.", "mdStore"],
+      ["At the bottom, tap the <b>Macros</b> tab, then the <b>+</b> button.", "mdAdd"],
+      ["In the red <b>Triggers</b> box, tap <b>+</b> → <b>Device Events</b> → <b>Notification</b>.", "mdTrig"],
+      ["Pick <b>Notification Received</b> → OK → <b>Select Application</b> → OK. Check <b>ntfy</b> → OK. If asked for notification access, give it to MacroDroid.", "mdApp"],
+      ["For the text, pick <b>Any</b> → <b>OK</b>.", "mdAny"],
+      ["In the blue <b>Actions</b> box, tap <b>+</b> → <b>Media</b> → <b>Speak Text</b>.", "mdAct"],
+      ["Tap <b>Copy the text</b> below, go back to MacroDroid, <b>paste it</b> in the text box, then <b>OK</b>.", "mdSpeak"],
+      ["At the top, type the name <b>Windows</b>, then tap the <b>✓</b> bottom right to save.", "mdSave"],
+      ["Come back here and tap <b>🔔 Test</b> (step 3). Your phone should say \"Test worked…\" out loud.", "mdTest"],
+    ],
     make: "Make my code",
     s4: "Send it", sendIt: "Last step: send this message to whoever gave you this link. That's it!",
     share: "Send", copy: "Copy", copied: "Copied ✓ Paste it in a text or email.",
@@ -285,7 +342,7 @@ const T = {
     msgHead: "Open the windows: new Google home", secretName: "Secret name", value: "Value",
     app: { store: "Play Store", by: "Philipp Heckel", installBtn: "Install", subTitle: "Subscribe to topic",
            instant: "Instant delivery", cancel: "CANCEL", sub: "SUBSCRIBE", allowQ: "Allow ntfy to send you notifications?",
-           allow: "Allow", deny: "Don't allow", now: "now", page: "Open the windows" },
+           allow: "Allow", deny: "Don't allow", now: "now", page: "Open the windows", mdName: "Windows" },
   },
 };
 
@@ -300,6 +357,11 @@ function makeTopic() {
 let topic = null;
 try { topic = localStorage.getItem("ntfyTopic"); } catch (e) {}
 if (!topic) { topic = makeTopic(); try { localStorage.setItem("ntfyTopic", topic); } catch (e) {} }
+
+// MacroDroid screen helpers (drawn from memory, labels in English like the app).
+const md = (body) => `<div class="bar" style="background:#d32f2f"><span>MacroDroid</span><span>⋮</span></div><div class="body">${body}</div>`;
+const mbox = (name, color, hit = false, set = "") => `<div class="mbox${hit ? " tap" : ""}" style="border-color:${color}">
+  <span style="background:${color}">${name}</span><em>${set || "+"}</em></div>`;
 
 // Drawn phone screens. `tap` marks what to press.
 function screen(kind, a, t) {
@@ -316,22 +378,44 @@ function screen(kind, a, t) {
     case "allow": return `<div class="bar"><span>ntfy</span><span>⋮</span></div><div class="dim"><div class="dlg" style="text-align:center">
       <div style="font-size:22px">🔔</div><h5>${a.allowQ}</h5><div class="pbtn tap" style="margin-top:8px">${a.allow}</div>
       <div style="margin-top:8px;color:#0b57d0;font-weight:700">${a.deny}</div></div></div>`;
+    case "mdStore": return `<div class="body"><div style="color:#666">◀ ${a.store}</div>
+      <div class="store"><div class="icon" style="background:#e53935">MD</div><div><b>MacroDroid</b><br><small>ArloSoft</small></div></div>
+      <div class="pbtn tap">${a.installBtn}</div></div>`;
+    case "mdAdd": return md(`<div class="mcard"></div><div class="mcard"></div><div class="mfab tap">+</div>
+      <div class="mtabs"><span>Home</span><b>Macros</b><span>Templates</span></div>`);
+    case "mdTrig": return md(mbox("Triggers", "#d32f2f", true) + mbox("Actions", "#1976d2") + mbox("Constraints", "#388e3c")
+      + `<div class="mlist"><div>Device Events ›</div><div class="tap">🔔 Notification</div></div>`);
+    case "mdApp": return md(`<div class="mlist"><b>Select Application</b><div>☐ Messages</div><div class="tap">☑ ntfy</div><div>☐ Phone</div>
+      <div class="macts">CANCEL &nbsp; OK</div></div>`);
+    case "mdAny": return md(`<div class="mlist"><b>Text content</b><div class="tap">◉ Any</div><div>○ Matches</div><div>○ Contains</div>
+      <div class="macts">CANCEL &nbsp; OK</div></div>`);
+    case "mdAct": return md(mbox("Triggers", "#d32f2f", false, "🔔 Notification Received (ntfy)") + mbox("Actions", "#1976d2", true)
+      + `<div class="mlist"><div>Media ›</div><div class="tap">🗣 Speak Text</div></div>`);
+    case "mdSpeak": return md(`<div class="mlist"><b>Speak Text</b><div class="fld tap" style="color:#1f2328">[notification_title]. [notification]</div>
+      <div class="macts">CANCEL &nbsp; OK</div></div>`);
+    case "mdSave": return md(`<div class="mname tap">${a.mdName}</div>` + mbox("Triggers", "#d32f2f", false, "🔔 Notification Received (ntfy)")
+      + mbox("Actions", "#1976d2", false, "🗣 Speak Text") + `<div class="mfab">✓</div>`);
+    case "mdTest": return `<div class="shade"><div class="clock">12:00</div><div class="notif">
+      <small>ntfy · ${a.now}</small><b>${t.testTitle}</b><br>${t.testMsg}</div>
+      <div style="text-align:center;font-size:34px;margin-top:30px" class="tap">🔊</div></div>`;
     case "notif": return `<div class="shade"><div class="clock">12:00</div><div class="notif tap">
       <small>ntfy · ${a.now}</small><b>${t.testTitle}</b><br>${t.testMsg}</div></div>`;
   }
 }
 
-const guide = { i: 0 };
-function drawGuide() {
-  const box = $("guide"), t = T[lang], steps = t.steps, n = steps.length, [text, kind] = steps[guide.i];
-  box.innerHTML = `<div class="gstep">${t.stepOf(guide.i + 1, n)}</div><div class="gtext">${text}</div>
+// Tap-by-tap guides: box id, step list key in T, what to focus when done.
+const guides = [{ box: "guide", key: "steps", done: "make", i: 0 }, { box: "mdGuide", key: "mdSteps", done: "copyMd", i: 0 }];
+function drawGuide(g) {
+  const box = $(g.box), t = T[lang], steps = t[g.key], n = steps.length, [text, kind] = steps[g.i];
+  box.innerHTML = `<div class="gstep">${t.stepOf(g.i + 1, n)}</div><div class="gtext">${text}</div>
     <div class="phone" aria-hidden="true">${screen(kind, t.app, t)}</div>
-    <div class="dots">${steps.map((_, k) => `<span class="${k === guide.i ? "on" : ""}"></span>`).join("")}</div>
-    <div class="gnav"><button class="ghost" type="button" id="gPrev">${t.prev}</button>
-    <button class="main" type="button" id="gNext">${guide.i === n - 1 ? t.done : t.next}</button></div>`;
-  $("gPrev").disabled = guide.i === 0;
-  $("gPrev").onclick = () => { if (guide.i > 0) { guide.i--; drawGuide(); } };
-  $("gNext").onclick = () => { if (guide.i < n - 1) { guide.i++; drawGuide(); } else { $("make").focus(); } };
+    <div class="dots">${steps.map((_, k) => `<span class="${k === g.i ? "on" : ""}"></span>`).join("")}</div>
+    <div class="gnav"><button class="ghost" type="button">${t.prev}</button>
+    <button class="main" type="button">${g.i === n - 1 ? t.done : t.next}</button></div>`;
+  const [prev, next] = box.querySelectorAll(".gnav button");
+  prev.disabled = g.i === 0;
+  prev.onclick = () => { if (g.i > 0) { g.i--; drawGuide(g); } };
+  next.onclick = () => { if (g.i < n - 1) { g.i++; drawGuide(g); } else { $(g.done).focus(); } };
 }
 
 function render() {
@@ -340,7 +424,7 @@ function render() {
   $("lang").textContent = lang === "fr" ? "English" : "Français";
   $("subscribe").href = "ntfy://ntfy.sh/" + topic + "?display=" + encodeURIComponent(T[lang].app.page);
   $("topicBox").textContent = topic;
-  drawGuide();
+  guides.forEach(drawGuide);
   if (message) build();
 }
 $("lang").onclick = () => { lang = lang === "fr" ? "en" : "fr"; render(); };
@@ -406,6 +490,7 @@ async function copyText(text, fallbackEl) {
               getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
 }
 $("copy").onclick = async () => { await copyText(message, $("out")); $("copied").textContent = T[lang].copied; };
+$("copyMd").onclick = async () => { await copyText($("mdText").textContent, $("mdText")); $("copyMd").textContent = T[lang].topicCopied; };
 $("copyTopic").onclick = async () => { await copyText(topic, $("topicBox")); $("copyTopic").textContent = T[lang].topicCopied; };
 $("share").onclick = () => navigator.share({ text: message }).catch(() => {});
 
@@ -415,7 +500,7 @@ $("testBtn").onclick = async () => {
   b.disabled = true; $("testOut").textContent = t.testing;
   try {
     const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify(
-      { topic, title: t.testTitle, message: t.testMsg, tags: ["white_check_mark"] }) });
+      { topic, title: t.testTitle, message: t.testMsg }) });
     $("testOut").textContent = r.ok ? t.testSent : t.testBad;
   } catch (e) { $("testOut").textContent = t.testBad; }
   b.disabled = false;
