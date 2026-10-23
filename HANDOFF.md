@@ -16,6 +16,13 @@ Friends-and-family release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
+## UPDATE (2026-10-22 night): guides rebuilt to the chat-navigation flow
+`Enable Notify Me` / `Enable Voice Monkey` typed in Ask Alexa did not work for everyone. Guides now follow real Alexa+ screenshots:
+Ask Alexa bar -> type `Skill` -> tap button "Alexa Skills & Integrations" -> search bar -> tap result -> Enable to use.
+Routines: type `Navigate to the settings page for: routines` -> tap "Manage Routines" -> ⊕.
+Notify Me guide = 8 steps (then `Open Notify Me` typed or spoken, then email). Voice Monkey guide = 18 steps (routine steps are 11-16; the "redo the routine" test message says so).
+Not verified on a real phone: Notify Me result row/enable screen is drawn from the Voice Monkey layout; the screen after "Manage Routines" is drawn as the Routines tab page.
+
 ## Open / NOT verified
 - First scheduled multi-home run not seen yet (state.json still old flat format; it migrates to
   `{"heartbeat", "homes": {...}}` on the next run).
