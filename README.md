@@ -27,7 +27,7 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
 
 ## Friends and family (other homes)
 This repo checks every home with its own local weather; friends never touch GitHub.
-1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (from `docs/index.html`;
+1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (a chooser, `docs/index.html`: Echo -> `docs/echo.html`, Google -> `docs/google.html`;
    turn on once at Settings > Pages > Deploy from branch `main`, folder `/docs`).
    French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
    and paste its code. The page gives them a message to send back to you.

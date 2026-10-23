@@ -6,7 +6,7 @@ Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
           TEST_HOME (main|<name>|all, for FORCE_TEST),
           VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, NOTIFYME_ACCESS_CODE,
           VOICEMONKEY_CHIME, ALERT_LANG (en|fr, your own home), ALL_SECRETS (JSON of all repo secrets; each
-          HOME_<NAME> secret is one more Echo home (docs/index.html), each GHOME_<NAME> secret one more
+          HOME_<NAME> secret is one more Echo home (docs/echo.html), each GHOME_<NAME> secret one more
           Google/Android home that gets phone pushes through ntfy (docs/google.html))
 """
 import json
