@@ -66,22 +66,30 @@ LINES = {
     ],
 }
 
-GENERAL = [
-    ("Pane relief", "Open up and feel the glass-ful of fresh air."),
-    ("Window of opportunity", "Don't let this one slide. Windows slide, get it?"),
-    ("Open and shut case", "The case for fresh air is wide open."),
-    ("Wind-ow time", "A wind-ow of fresh air awaits."),
-    ("Sill waiting", "Why sit around being sill-y? Open up."),
-    ("Don't pane, open up", "It's easy. Just sash-ay on over to the window."),
-    ("Frame the breeze", "A frame-worthy day to let the air in."),
-    ("Ledge-endary air", "Today's breeze is ledge-endary. Open up."),
-    ("Glass half open", "The optimist's way to cool the place."),
-    ("Crack a window", "Crack it open. Crack a smile. Crack a pane joke."),
-    ("Latch on to this", "Unlatch it and let the fresh air in."),
-    ("Hinge-credible weather", "Hinge-credible air is waiting outside."),
-    ("Breeze through it", "Opening the window is a breeze."),
-    ("Pane-less cooling", "Pane-free, pain-free, and totally free."),
-]
+# Picked by the weather outside. {deg} becomes the current temp ("19°" or "19 degrees").
+WEATHER_LINES = {
+    "breezy": [  # wind 20 km/h or more
+        ("Breezy {deg}, wind-ow time", "A wind-ow of fresh air awaits. Hold on to your papers."),
+        ("{deg} and gust-o", "Good gusts out there. Breeze through it and open up."),
+        ("Hinge-credible {deg} breeze", "Hinge-credible air is blowing outside."),
+    ],
+    "cool": [  # under 18
+        ("Crisp {deg}, crack a pane", "Crack it open. Crack a smile. Crack a pane joke."),
+        ("Cool {deg}, sill waiting", "Why sit around being sill-y? Let the cool air in."),
+        ("{deg} of chill-ax air", "Not cold, just chill. Unlatch it and let it in."),
+    ],
+    "mild": [  # 18 to 20
+        ("{deg} of pane relief", "Open up and feel the glass-ful of fresh air."),
+        ("Window of opportunity at {deg}", "Don't let this one slide. Windows slide, get it?"),
+        ("Goldilocks {deg}", "Not too hot, not too cold. Frame-worthy air."),
+        ("{deg}, open and shut case", "The case for fresh air is wide open."),
+    ],
+    "warm": [  # over 20
+        ("Warm {deg}, glass half open", "The optimist's way to cool the place."),
+        ("Ledge-endary {deg}", "Today's warm breeze is ledge-endary. Open up."),
+        ("{deg}, don't pane", "It's easy. Just sash-ay on over to the window."),
+    ],
+}
 
 CLOSE_LINES = {
     "rain": [
@@ -106,13 +114,31 @@ def holiday_for(d: date):
     return None
 
 
+def weather_kind(w: dict) -> str:
+    """breezy, cool, mild or warm: picks which WEATHER_LINES pool to use."""
+    if w["wind"] >= 20:
+        return "breezy"
+    if w["temp"] < 18:
+        return "cool"
+    if w["temp"] <= 20:
+        return "mild"
+    return "warm"
+
+
 def build_message(d: date, w: dict, spoken: bool = False, rng=random, close=None):
-    """Return (title, body). Themed lines near a holiday, otherwise a random pick."""
+    """Return (title, body). Themed lines near a holiday, otherwise one matching
+    the weather. Open titles always carry the current temp."""
     if close:
         title, joke = rng.choice(CLOSE_LINES.get(close) or CLOSE_LINES["cold"])
         return title, joke
-    pool = LINES.get(holiday_for(d)) or GENERAL
-    title, joke = rng.choice(pool)
+    deg = f"{w['temp']:.0f} degrees" if spoken else f"{w['temp']:.0f}°"
+    holiday = LINES.get(holiday_for(d))
+    if holiday:
+        title, joke = rng.choice(holiday)
+        title = f"{title}, {deg}"
+    else:
+        title, joke = rng.choice(WEATHER_LINES[weather_kind(w)])
+        title = title.format(deg=deg)
     unit = "degrees" if spoken else "C"
     stats = (f"{w['temp']:.0f} {unit} outside, {w['humidity']:.0f} percent humidity, "
              f"dew point {w['dew_point']:.0f}.")
