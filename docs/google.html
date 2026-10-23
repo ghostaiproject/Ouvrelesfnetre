@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ouvre les fenêtres · Google</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --card: #ffffff; --ink: #1f2328; --muted: #5d6470;
+    --line: #dedad2; --accent: #2f6f4f; --accent-ink: #ffffff; --soft: #e8f1ec; --warn: #9a3b1b;
+    --tap: #e8590c; --ntfy: #338574;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15181c; --card: #1e2227; --ink: #e8e6e3; --muted: #a0a6ae;
+            --line: #33383f; --accent: #6fbf94; --accent-ink: #0f1a14; --soft: #1f2d26; --warn: #f0a07f;
+            --tap: #ff8a4c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+  h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 12px; }
+  .lang { border: 1px solid var(--line); background: var(--card); color: var(--ink);
+          border-radius: 999px; padding: 6px 12px; font: inherit; font-size: .9rem; cursor: pointer; flex: none; }
+  .switch { display: block; text-align: center; border: 1px dashed var(--line); border-radius: 12px; padding: 10px;
+            color: var(--accent); font-weight: 600; text-decoration: none; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin: 14px 0; }
+  h2 { font-size: 1.1rem; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
+  .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+       background: var(--soft); color: var(--accent); font-weight: 700; font-size: .95rem; flex: none; }
+  label { display: block; font-weight: 600; margin: 10px 0 4px; }
+  input { width: 100%; font: inherit; padding: 12px; border-radius: 10px;
+          border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; min-width: 0; }
+  button.main, button.ghost, a.main { font: inherit; font-weight: 600; border-radius: 10px; padding: 12px 16px;
+                                      cursor: pointer; text-align: center; text-decoration: none; }
+  button.main, a.main { background: var(--accent); color: var(--accent-ink); border: 0; display: block; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  button:disabled { opacity: .35; cursor: default; }
+  .wide { width: 100%; margin-top: 12px; }
+  .hint { color: var(--muted); font-size: .92rem; margin: 6px 0 0; }
+  .note { background: var(--soft); border-radius: 10px; padding: 10px 12px; font-size: .95rem; margin: 10px 0 0; }
+  .err { color: var(--warn); font-size: .95rem; margin: 8px 0 0; min-height: 1px; }
+  .places { list-style: none; padding: 0; margin: 10px 0 0; }
+  .places button { width: 100%; text-align: left; font: inherit; color: var(--ink); background: var(--bg);
+                   border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 4px 0; cursor: pointer; }
+  .places button[aria-pressed="true"] { border-color: var(--accent); background: var(--soft); font-weight: 600; }
+  .places button[aria-pressed="true"]::after { content: "  ✓"; color: var(--accent); }
+  details summary { cursor: pointer; font-weight: 600; }
+  pre { white-space: pre-wrap; word-break: break-all; background: var(--bg); border: 1px solid var(--line);
+        border-radius: 10px; padding: 12px; font-size: .85rem; margin: 10px 0; }
+  .topic { font-family: ui-monospace, monospace; font-size: .95rem; background: var(--bg); border: 1px solid var(--line);
+           border-radius: 10px; padding: 10px 12px; word-break: break-all; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btns button { flex: 1; min-width: 140px; }
+  #result { display: none; }
+
+  /* tap-by-tap guide */
+  .guide { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--bg); margin-top: 6px; }
+  .gstep { font-size: .85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+  .gtext { font-size: 1.05rem; font-weight: 600; margin: 4px 0 12px; min-height: 3em; }
+  .gtext b { color: var(--tap); }
+  .phone { position: relative; width: 230px; height: 360px; margin: 0 auto; border-radius: 28px;
+           border: 8px solid #1b1b1f; background: #fff; color: #1f2328; overflow: hidden;
+           font-size: 13px; line-height: 1.3; box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+  .bar { background: var(--ntfy); color: #fff; padding: 14px 12px 10px; font-weight: 700;
+         display: flex; justify-content: space-between; }
+  .body { padding: 10px 12px; }
+  .store { display: flex; gap: 10px; align-items: center; margin: 14px 0 6px; }
+  .icon { width: 46px; height: 46px; border-radius: 12px; background: var(--ntfy); color: #fff; display: grid;
+          place-items: center; font-weight: 800; font-size: 13px; flex: none; }
+  .pbtn { background: #0b57d0; color: #fff; text-align: center; font-weight: 700; border-radius: 20px;
+          padding: 9px; margin-top: 14px; }
+  .gbtn { background: var(--accent); color: #fff; text-align: center; font-weight: 700; border-radius: 10px;
+          padding: 9px; margin-top: 10px; font-size: 12px; }
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; }
+  .dlg { background: #fff; border-radius: 16px; width: 86%; padding: 14px; }
+  .dlg h5 { margin: 0 0 8px; font-size: 14px; }
+  .fld { border-bottom: 2px solid var(--ntfy); padding: 4px 0; font-family: ui-monospace, monospace; font-size: 11px;
+         word-break: break-all; }
+  .chk { font-size: 11px; color: #444; margin-top: 8px; }
+  .acts { display: flex; justify-content: flex-end; gap: 14px; margin-top: 12px; font-weight: 700;
+          color: var(--ntfy); font-size: 12px; }
+  .notif { background: #eef1f4; border-radius: 14px; padding: 10px; margin: 8px; }
+  .notif small { color: #666; display: block; }
+  .shade { background: #2b2f36; position: absolute; inset: 0; color: #fff; }
+  .shade .clock { padding: 14px 14px 4px; font-size: 22px; font-weight: 300; }
+  .shade .notif { background: #3b4048; color: #fff; }
+  .shade .notif small { color: #b9c0c8; }
+  .tap { position: relative; outline: 3px solid var(--tap); outline-offset: 2px; border-radius: 10px;
+         animation: pulse 1.4s ease-in-out infinite; }
+  .tap::after { content: "👆"; position: absolute; right: 8px; bottom: -22px; font-size: 26px;
+                animation: poke 1.4s ease-in-out infinite; z-index: 2; }
+  @keyframes pulse { 50% { outline-color: transparent; } }
+  @keyframes poke { 50% { transform: translateY(-5px); } }
+  @media (prefers-reduced-motion: reduce) { .tap, .tap::after { animation: none; } }
+  .gnav { display: flex; gap: 8px; margin-top: 14px; }
+  .gnav button { flex: 1; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dots span.on { background: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1 data-t="title"></h1>
+      <p class="lead" data-t="lead"></p>
+    </div>
+    <button class="lang" id="lang" type="button">English</button>
+  </header>
+  <a class="switch" href="./" data-t="toEcho"></a>
+
+  <section>
+    <h2 data-t="whatTitle"></h2>
+    <p data-t="what1"></p>
+    <p data-t="what2"></p>
+    <p data-t="what3"></p>
+    <p class="note" data-t="why"></p>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span><span data-t="s1"></span></h2>
+    <label for="name" data-t="nameLabel"></label>
+    <input id="name" autocomplete="off" maxlength="30">
+    <p class="hint" data-t="nameHint"></p>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span><span data-t="s2"></span></h2>
+    <p class="hint" data-t="townDo"></p>
+    <label for="town" data-t="townLabel"></label>
+    <div class="row">
+      <input id="town" autocomplete="off">
+      <button class="main" id="search" type="button" data-t="search"></button>
+    </div>
+    <ul class="places" id="places"></ul>
+    <p class="err" id="townErr"></p>
+    <details id="manual">
+      <summary data-t="manual"></summary>
+      <label for="lat" data-t="lat"></label><input id="lat" inputmode="decimal">
+      <label for="lon" data-t="lon"></label><input id="lon" inputmode="decimal">
+      <p class="hint" data-t="manualHint"></p>
+    </details>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span><span data-t="s3"></span></h2>
+    <p class="hint" data-t="guideIntro"></p>
+    <div class="guide" id="guide"></div>
+    <a class="main wide" id="install" target="_blank" rel="noopener"
+       href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" data-t="install"></a>
+    <a class="main wide" id="subscribe" data-t="subscribe"></a>
+    <button class="ghost wide" id="testBtn" type="button" data-t="test"></button>
+    <p class="hint" id="testOut" aria-live="polite"></p>
+    <details style="margin-top:12px">
+      <summary data-t="iphone"></summary>
+      <p class="hint" data-t="iphoneHow"></p>
+      <div class="topic" id="topicBox"></div>
+      <button class="ghost wide" id="copyTopic" type="button" data-t="copyTopic"></button>
+    </details>
+  </section>
+
+  <button class="main wide" id="make" type="button" data-t="make"></button>
+  <p class="err" id="makeErr"></p>
+
+  <section id="result">
+    <h2><span class="n">4</span><span data-t="s4"></span></h2>
+    <p data-t="sendIt"></p>
+    <pre id="out"></pre>
+    <div class="btns">
+      <button class="main" id="share" type="button" data-t="share"></button>
+      <button class="ghost" id="copy" type="button" data-t="copy"></button>
+    </div>
+    <p class="hint" id="copied"></p>
+    <p class="hint" id="sendHow"></p>
+    <p class="hint" data-t="langNote"></p>
+    <p class="hint" data-t="after"></p>
+  </section>
+</main>
+
+<script>
+const T = {
+  fr: {
+    title: "Ouvre les fenêtres",
+    lead: "Version Google Home / Android. 3 minutes, sur ton téléphone.",
+    toEcho: "Tu as un Echo (Alexa)? Prends plutôt la page Echo →",
+    whatTitle: "C'est quoi?",
+    what1: "☀️ Un petit service gratuit qui surveille la météo de ta ville et t'avertit quand il fait assez doux et sec pour ouvrir les fenêtres.",
+    what2: "🌧️ Il te rappelle de les fermer avant la pluie ou le froid.",
+    what3: "📱 Les alertes arrivent sur ton téléphone avec l'app gratuite ntfy, avec une blague de fenêtre en prime.",
+    why: "Pourquoi pas sur le haut-parleur Google? Google ne permet pas de faire dire un message personnalisé à un Nest depuis Internet. Le téléphone, ça marche à tout coup.",
+    s1: "Ton nom", nameLabel: "Un nom pour ta maison", nameHint: "Ex. : Maman, Julie, Chalet. Lettres et chiffres seulement.",
+    s2: "Ta ville",
+    townDo: "Écris le nom de ta ville, appuie sur « Chercher », puis touche ta ville dans la liste (un ✓ vert apparaît).",
+    townLabel: "Nom de ta ville", search: "Chercher",
+    manual: "Ta ville n'apparaît pas?", lat: "Latitude", lon: "Longitude",
+    manualHint: "Dans Google Maps, appuie longtemps sur ta maison : les deux nombres en haut sont la latitude et la longitude.",
+    s3: "L'app ntfy",
+    guideIntro: "Suis les images. Le cercle orange 👆 montre où appuyer. Les mots peuvent varier un peu selon ton téléphone.",
+    prev: "◀ Retour", next: "Suivant ▶", done: "Terminé ✓", stepOf: (i, n) => `Étape ${i} de ${n}`,
+    steps: [
+      ["Appuie sur le bouton vert <b>Installer ntfy</b> plus bas. Dans le Play Store, appuie sur <b>Installer</b>.", "store"],
+      ["Reviens ici et appuie sur le bouton vert <b>S'abonner dans ntfy</b>.", "page"],
+      ["ntfy s'ouvre avec ton sujet déjà écrit. Appuie sur <b>S'abonner</b>. (Tu vois « Livraison instantanée »? Coche-la, c'est mieux.)", "dialog"],
+      ["Si ton téléphone demande la permission pour les notifications, appuie sur <b>Autoriser</b>.", "allow"],
+      ["Reviens ici et appuie sur <b>🔔 Tester</b>. Une notification doit arriver en quelques secondes.", "notif"],
+    ],
+    install: "Installer ntfy", subscribe: "S'abonner dans ntfy", test: "🔔 Tester",
+    testing: "Envoi…", testTitle: "Test réussi 🪟", testMsg: "Ton téléphone est prêt pour Ouvre les fenêtres!",
+    testSent: "Envoyé! La notification doit apparaître dans quelques secondes. Rien? Refais l'étape « S'abonner ».",
+    testBad: "L'envoi n'a pas marché. Vérifie ta connexion et réessaie.",
+    iphone: "Tu as un iPhone?",
+    iphoneHow: "Installe ntfy depuis l'App Store. Dans ntfy, appuie sur +, colle ce sujet, puis « Subscribe ». Garde ce sujet secret : c'est l'adresse de tes alertes.",
+    copyTopic: "Copier le sujet", topicCopied: "Copié ✓",
+    make: "Créer mon code",
+    s4: "Envoie-le", sendIt: "Dernière étape : envoie ce message à la personne qui t'a donné ce lien. C'est tout!",
+    share: "Envoyer", copy: "Copier", copied: "Copié ✓ Colle-le dans un texto ou un courriel.",
+    sendShare: "Appuie sur « Envoyer », choisis Messages (ou Messenger, courriel…), choisis la personne, puis envoie.",
+    sendCopy: "Appuie sur « Copier », ouvre tes textos ou tes courriels, appuie longtemps dans la zone de texte → Coller, puis envoie.",
+    langNote: "🇫🇷 Tes alertes et blagues seront en français. Pour l'anglais, appuie sur « English » en haut : le code se met à jour tout seul.",
+    after: "Garde ce code pour toi : il contient l'adresse de tes alertes.",
+    errName: "Écris un nom (étape 1).", errTown: "Choisis ta ville dans la liste (étape 2).",
+    errSearch: "Aucune ville trouvée. Vérifie l'orthographe ou utilise « Ta ville n'apparaît pas? ».",
+    errNet: "La recherche ne marche pas en ce moment. Utilise « Ta ville n'apparaît pas? ».",
+    msgHead: "Ouvre les fenêtres : nouvelle maison Google", secretName: "Nom du secret", value: "Valeur",
+    app: { store: "Play Store", by: "Philipp Heckel", installBtn: "Installer", subTitle: "S'abonner au sujet",
+           instant: "Livraison instantanée", cancel: "ANNULER", sub: "S'ABONNER", allowQ: "Autoriser ntfy à t'envoyer des notifications?",
+           allow: "Autoriser", deny: "Ne pas autoriser", now: "maintenant", page: "Ouvre les fenêtres" },
+  },
+  en: {
+    title: "Open the windows",
+    lead: "Google Home / Android version. 3 minutes, on your phone.",
+    toEcho: "Got an Echo (Alexa)? Use the Echo page instead →",
+    whatTitle: "What is it?",
+    what1: "☀️ A small free service that watches your town's weather and tells you when it's mild and dry enough to open the windows.",
+    what2: "🌧️ It reminds you to close them before rain or cold.",
+    what3: "📱 Alerts arrive on your phone through the free ntfy app, with a window joke on the side.",
+    why: "Why not on the Google speaker? Google doesn't let anyone make a Nest say a custom message from the internet. The phone works every time.",
+    s1: "Your name", nameLabel: "A name for your home", nameHint: "E.g. Mom, Julie, Cottage. Letters and numbers only.",
+    s2: "Your town",
+    townDo: "Type your town, tap \"Search\", then tap your town in the list (a green ✓ appears).",
+    townLabel: "Town name", search: "Search",
+    manual: "Can't find your town?", lat: "Latitude", lon: "Longitude",
+    manualHint: "In Google Maps, long-press your home: the two numbers at the top are latitude and longitude.",
+    s3: "The ntfy app",
+    guideIntro: "Follow the pictures. The orange circle 👆 shows where to tap. Words may differ a little on your phone.",
+    prev: "◀ Back", next: "Next ▶", done: "Done ✓", stepOf: (i, n) => `Step ${i} of ${n}`,
+    steps: [
+      ["Tap the green <b>Install ntfy</b> button below. In the Play Store, tap <b>Install</b>.", "store"],
+      ["Come back here and tap the green <b>Subscribe in ntfy</b> button.", "page"],
+      ["ntfy opens with your topic already filled in. Tap <b>Subscribe</b>. (See \"Instant delivery\"? Check it, it's better.)", "dialog"],
+      ["If your phone asks about notifications, tap <b>Allow</b>.", "allow"],
+      ["Come back here and tap <b>🔔 Test</b>. A notification should show up within seconds.", "notif"],
+    ],
+    install: "Install ntfy", subscribe: "Subscribe in ntfy", test: "🔔 Test",
+    testing: "Sending…", testTitle: "Test worked 🪟", testMsg: "Your phone is ready for Open the windows!",
+    testSent: "Sent! The notification should appear within seconds. Nothing? Redo the \"Subscribe\" step.",
+    testBad: "Sending didn't work. Check your connection and try again.",
+    iphone: "Got an iPhone?",
+    iphoneHow: "Install ntfy from the App Store. In ntfy, tap +, paste this topic, then \"Subscribe\". Keep this topic secret: it's the address of your alerts.",
+    copyTopic: "Copy the topic", topicCopied: "Copied ✓",
+    make: "Make my code",
+    s4: "Send it", sendIt: "Last step: send this message to whoever gave you this link. That's it!",
+    share: "Send", copy: "Copy", copied: "Copied ✓ Paste it in a text or email.",
+    sendShare: "Tap \"Send\", pick Messages (or Messenger, email…), pick the person, then send.",
+    sendCopy: "Tap \"Copy\", open your texts or email, long-press in the message box → Paste, then send.",
+    langNote: "🇬🇧 Your alerts and jokes will be in English. For French, tap \"Français\" at the top: the code updates by itself.",
+    after: "Keep this code private: it holds the address of your alerts.",
+    errName: "Type a name (step 1).", errTown: "Pick your town in the list (step 2).",
+    errSearch: "No town found. Check the spelling or use \"Can't find your town?\".",
+    errNet: "Search isn't working right now. Use \"Can't find your town?\".",
+    msgHead: "Open the windows: new Google home", secretName: "Secret name", value: "Value",
+    app: { store: "Play Store", by: "Philipp Heckel", installBtn: "Install", subTitle: "Subscribe to topic",
+           instant: "Instant delivery", cancel: "CANCEL", sub: "SUBSCRIBE", allowQ: "Allow ntfy to send you notifications?",
+           allow: "Allow", deny: "Don't allow", now: "now", page: "Open the windows" },
+  },
+};
+
+let lang = "fr", place = null, message = "";
+const $ = (id) => document.getElementById(id);
+
+// One private ntfy topic per phone, kept so a reload doesn't break the subscription.
+function makeTopic() {
+  const abc = "abcdefghijkmnopqrstuvwxyz23456789", r = crypto.getRandomValues(new Uint8Array(16));
+  return "fenetres-" + [...r].map((b) => abc[b % abc.length]).join("");
+}
+let topic = null;
+try { topic = localStorage.getItem("ntfyTopic"); } catch (e) {}
+if (!topic) { topic = makeTopic(); try { localStorage.setItem("ntfyTopic", topic); } catch (e) {} }
+
+// Drawn phone screens. `tap` marks what to press.
+function screen(kind, a, t) {
+  const short = topic.slice(0, 18) + "…";
+  switch (kind) {
+    case "store": return `<div class="body"><div style="color:#666">◀ ${a.store}</div>
+      <div class="store"><div class="icon">ntfy</div><div><b>ntfy</b><br><small>${a.by}</small></div></div>
+      <div class="pbtn tap">${a.installBtn}</div></div>`;
+    case "page": return `<div class="body"><b>${a.page}</b><div class="gbtn" style="margin-top:20px">${t.install}</div>
+      <div class="gbtn tap">${t.subscribe}</div><div class="gbtn" style="background:#fff;color:var(--accent);border:1px solid var(--accent)">${t.test}</div></div>`;
+    case "dialog": return `<div class="bar"><span>ntfy</span><span>⋮</span></div><div class="dim"><div class="dlg">
+      <h5>${a.subTitle}</h5><div class="fld">${short}</div><div class="chk">☐ ${a.instant}</div>
+      <div class="acts"><span>${a.cancel}</span><span class="tap" style="padding:2px 4px">${a.sub}</span></div></div></div>`;
+    case "allow": return `<div class="bar"><span>ntfy</span><span>⋮</span></div><div class="dim"><div class="dlg" style="text-align:center">
+      <div style="font-size:22px">🔔</div><h5>${a.allowQ}</h5><div class="pbtn tap" style="margin-top:8px">${a.allow}</div>
+      <div style="margin-top:8px;color:#0b57d0;font-weight:700">${a.deny}</div></div></div>`;
+    case "notif": return `<div class="shade"><div class="clock">12:00</div><div class="notif tap">
+      <small>ntfy · ${a.now}</small><b>${t.testTitle}</b><br>${t.testMsg}</div></div>`;
+  }
+}
+
+const guide = { i: 0 };
+function drawGuide() {
+  const box = $("guide"), t = T[lang], steps = t.steps, n = steps.length, [text, kind] = steps[guide.i];
+  box.innerHTML = `<div class="gstep">${t.stepOf(guide.i + 1, n)}</div><div class="gtext">${text}</div>
+    <div class="phone" aria-hidden="true">${screen(kind, t.app, t)}</div>
+    <div class="dots">${steps.map((_, k) => `<span class="${k === guide.i ? "on" : ""}"></span>`).join("")}</div>
+    <div class="gnav"><button class="ghost" type="button" id="gPrev">${t.prev}</button>
+    <button class="main" type="button" id="gNext">${guide.i === n - 1 ? t.done : t.next}</button></div>`;
+  $("gPrev").disabled = guide.i === 0;
+  $("gPrev").onclick = () => { if (guide.i > 0) { guide.i--; drawGuide(); } };
+  $("gNext").onclick = () => { if (guide.i < n - 1) { guide.i++; drawGuide(); } else { $("make").focus(); } };
+}
+
+function render() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = T[lang][el.dataset.t]; });
+  $("lang").textContent = lang === "fr" ? "English" : "Français";
+  $("subscribe").href = "ntfy://ntfy.sh/" + topic + "?display=" + encodeURIComponent(T[lang].app.page);
+  $("topicBox").textContent = topic;
+  drawGuide();
+  if (message) build();
+}
+$("lang").onclick = () => { lang = lang === "fr" ? "en" : "fr"; render(); };
+
+function slug(s) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase()
+          .replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 30);
+}
+
+async function search() {
+  const q = $("town").value.trim();
+  $("townErr").textContent = ""; $("places").innerHTML = ""; place = null;
+  if (!q) return;
+  try {
+    const url = "https://geocoding-api.open-meteo.com/v1/search?count=6&format=json&language=" + lang
+              + "&name=" + encodeURIComponent(q);
+    const j = await (await fetch(url)).json();
+    if (!j.results || !j.results.length) { $("townErr").textContent = T[lang].errSearch; return; }
+    j.results.forEach((r) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button";
+      b.textContent = [r.name, r.admin1, r.country].filter(Boolean).join(", ");
+      b.onclick = () => {
+        place = { lat: r.latitude, lon: r.longitude, tz: r.timezone || "America/Toronto" };
+        document.querySelectorAll(".places button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+      };
+      li.appendChild(b); $("places").appendChild(li);
+    });
+    if (j.results.length === 1) $("places").querySelector("button").click();
+  } catch (e) { $("townErr").textContent = T[lang].errNet; $("manual").open = true; }
+}
+$("search").onclick = search;
+$("town").addEventListener("keydown", (e) => { if (e.key === "Enter") search(); });
+
+function where() {
+  const lat = parseFloat($("lat").value.replace(",", ".")), lon = parseFloat($("lon").value.replace(",", "."));
+  if ($("manual").open && isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+    return { lat, lon, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Toronto" };
+  }
+  return place;
+}
+
+function build() {
+  const t = T[lang], name = $("name").value.trim(), id = slug(name), p = where();
+  const err = !id ? t.errName : !p ? t.errTown : "";
+  $("makeErr").textContent = err;
+  if (err) { $("result").style.display = "none"; message = ""; return; }
+  // Compact code (alert.py _google_home): n name, p [lat, lon], l language, z timezone if not Toronto, g ntfy topic.
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  const home = { n: name, p: [r3(p.lat), r3(p.lon)], l: lang, g: topic };
+  if (p.tz && p.tz !== "America/Toronto") home.z = p.tz;
+  message = t.msgHead + "\n" + t.secretName + ": GHOME_" + id + "\n" + t.value + ":\n" + JSON.stringify(home);
+  $("out").textContent = message;
+  $("share").style.display = navigator.share ? "" : "none";
+  $("sendHow").textContent = navigator.share ? t.sendShare : t.sendCopy;
+  $("result").style.display = "block";
+}
+$("make").onclick = () => { build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
+
+async function copyText(text, fallbackEl) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(fallbackEl);
+              getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy"); }
+}
+$("copy").onclick = async () => { await copyText(message, $("out")); $("copied").textContent = T[lang].copied; };
+$("copyTopic").onclick = async () => { await copyText(topic, $("topicBox")); $("copyTopic").textContent = T[lang].topicCopied; };
+$("share").onclick = () => navigator.share({ text: message }).catch(() => {});
+
+// Test: same ntfy call as alert.py (_ntfy), straight from this page.
+$("testBtn").onclick = async () => {
+  const t = T[lang], b = $("testBtn");
+  b.disabled = true; $("testOut").textContent = t.testing;
+  try {
+    const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify(
+      { topic, title: t.testTitle, message: t.testMsg, tags: ["white_check_mark"] }) });
+    $("testOut").textContent = r.ok ? t.testSent : t.testBad;
+  } catch (e) { $("testOut").textContent = t.testBad; }
+  b.disabled = false;
+};
+
+// iPhone: App Store instead of Play Store, and open the iPhone help.
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+  $("install").href = "https://apps.apple.com/us/app/ntfy/id1625396347";
+  document.querySelector("#topicBox").closest("details").open = true;
+}
+render();
+</script>
+</body>
+</html>

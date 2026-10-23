@@ -6,7 +6,8 @@ Env vars: MODE (auto|notify_me|announce), DRY_RUN=1, FORCE_TEST=1,
           TEST_HOME (main|<name>|all, for FORCE_TEST),
           VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, NOTIFYME_ACCESS_CODE,
           VOICEMONKEY_CHIME, ALERT_LANG (en|fr, your own home), ALL_SECRETS (JSON of all repo secrets; each
-          HOME_<NAME> secret is one more home, made with setup.html)
+          HOME_<NAME> secret is one more Echo home (docs/index.html), each GHOME_<NAME> secret one more
+          Google/Android home that gets phone pushes through ntfy (docs/google.html))
 """
 import json
 import os
@@ -53,6 +54,7 @@ STATE_FILE = Path(__file__).parent / "state.json"
 API = "https://api.open-meteo.com/v1/forecast"
 VM_URL = "https://api-v3.voicemonkey.io/announce"
 NM_URL = "https://api.notifymyecho.com/v1/NotifyMe"
+NTFY_URL = "https://ntfy.sh/"
 
 
 # ------------------------------------------------------- PURE DECISION LOGIC
@@ -200,6 +202,11 @@ def load_homes(env=os.environ) -> list:
     except ValueError:
         secrets = {}
     for key in sorted(secrets):
+        if key.startswith("GHOME_"):
+            home = _google_home(key, secrets[key])
+            if home:
+                homes.append(home)
+            continue
         if not key.startswith("HOME_"):
             continue
         hid = key[5:].lower()
@@ -224,6 +231,31 @@ def load_homes(env=os.environ) -> list:
             continue
         homes.append(home)
     return homes
+
+
+def _google_home(key: str, raw: str):
+    """A GHOME_<NAME> secret (docs/google.html): Google Home / Android homes.
+    Google speakers can't say custom text from the cloud, so these homes get every
+    alert as a phone push from ntfy instead. Keys: n name, p [lat, lon], l lang,
+    z timezone (default America/Toronto), g ntfy topic. Id is "g-<name>" so it
+    never clashes with an Echo home of the same name."""
+    try:
+        h = json.loads(raw)
+        lat, lon = h["p"]
+        topic = str(h["g"])
+        if not topic or "/" in topic:
+            raise ValueError("bad topic")
+        home = {
+            "id": "g-" + key[6:].lower(), "name": str(h.get("n") or key[6:].lower()),
+            "lat": float(lat), "lon": float(lon), "tz": h.get("z") or CONFIG["tz"],
+            "ntfy": topic, "notifyme": "", "vm_token": "", "vm_device": "", "chime": "",
+            "mode": "push", "lang": norm_lang(str(h.get("l") or "fr").lower()),
+        }
+        ZoneInfo(home["tz"])
+    except Exception:  # noqa: BLE001  (never print the secret itself)
+        print(f"ERROR {key}: not a valid Google home code, skipped.", file=sys.stderr)
+        return None
+    return home
 
 
 def home_cfg(home: dict) -> dict:
@@ -255,10 +287,28 @@ def _announce(title, text, token, device, chime=""):
     r.raise_for_status()
 
 
-def send(home: dict, title: str, text: str, speak: bool):
+NTFY_TAGS = {"open": ["house_with_garden"], "rain": ["umbrella"], "cold": ["snowflake"],
+             "test": ["white_check_mark"]}
+
+
+def _ntfy(title, text, topic, kind="open"):
+    """Phone push through ntfy.sh. JSON publish so accents in the title are safe."""
+    r = requests.post(NTFY_URL, timeout=15, json={
+        "topic": topic, "title": title, "message": text,
+        "tags": NTFY_TAGS.get(kind, []),
+        "priority": 4 if kind in ("rain", "cold") else 3,  # close reminders buzz a bit more
+    })
+    r.raise_for_status()
+
+
+def send(home: dict, title: str, text: str, speak: bool, kind: str = "open"):
     """auto: silent ping always, plus spoken when `speak` (if Voice Monkey is set up).
-    notify_me: silent only. announce: spoken only."""
+    notify_me: silent only. announce: spoken only. push (Google homes): every alert
+    goes to the phone, `speak` is ignored. kind: open|rain|cold|test (push icon)."""
     mode = home["mode"]
+    if mode == "push":
+        _ntfy(title, text, home["ntfy"], kind)
+        return
     if mode not in ("auto", "notify_me", "announce"):
         raise ValueError(f"unknown MODE {mode!r}")
     if mode in ("auto", "notify_me") and home["notifyme"]:
@@ -293,8 +343,8 @@ def mask_secrets(homes):
     """Hide every code in GitHub's public logs (a HOME_ secret is masked only as a whole)."""
     if os.environ.get("GITHUB_ACTIONS") == "true":
         for h in homes:
-            for k in ("notifyme", "vm_token", "vm_device"):
-                if h[k]:
+            for k in ("notifyme", "vm_token", "vm_device", "ntfy"):
+                if h.get(k):
                     print(f"::add-mask::{h[k]}")
 
 
@@ -311,7 +361,7 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
     if force:
         print(f"{tag} FORCE_TEST mode={home['mode']} lang={lang} title={title!r} msg={msg!r} dry={dry}")
         if not dry:
-            send(home, title, msg, speak=True)
+            send(home, title, msg, speak=True, kind="test")
         return state
 
     ok, checks = evaluate(now, w, cfg)
@@ -329,7 +379,7 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
         send(home, title, msg, speak=is_optimal(w, cfg))
     elif action == "close":
         c_title, c_msg = build_message(now.date(), w, close=reason, lang=lang)
-        send(home, c_title, c_msg, speak=True)
+        send(home, c_title, c_msg, speak=True, kind=reason)
     return new
 
 
@@ -340,7 +390,8 @@ def main() -> int:
     homes = load_homes()
     mask_secrets(homes)
     if force and test_home != "all":
-        homes = [h for h in homes if h["id"] == test_home]
+        # a Google home answers to its name too ("maman" finds "g-maman")
+        homes = [h for h in homes if h["id"] in (test_home, "g-" + test_home)]
         if not homes:
             print(f"ERROR no home called {test_home!r}.", file=sys.stderr)
             return 1

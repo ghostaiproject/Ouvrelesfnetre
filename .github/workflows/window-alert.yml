@@ -6,7 +6,7 @@ on:
   workflow_dispatch:   # tapping "Run workflow" = send ONE test alert now
     inputs:
       home:
-        description: "Which home gets the test: main (yours), a name like mom, or all"
+        description: "Which home gets the test: main (yours), a name like mom (Echo or Google), or all"
         default: main
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
           VOICEMONKEY_DEVICE: ${{ secrets.VOICEMONKEY_DEVICE }}
           NOTIFYME_ACCESS_CODE: ${{ secrets.NOTIFYME_ACCESS_CODE }}
           TEST_HOME: ${{ inputs.home }}
-          ALL_SECRETS: ${{ toJSON(secrets) }}   # every HOME_<NAME> secret = one more home
+          ALL_SECRETS: ${{ toJSON(secrets) }}   # every HOME_<NAME> (Echo) / GHOME_<NAME> (Google) secret = one more home
         run: python alert.py
       - name: Save state
         if: always()   # other homes' state still saves if one home failed

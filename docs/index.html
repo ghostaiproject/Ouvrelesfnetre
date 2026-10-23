@@ -122,6 +122,8 @@
   @keyframes poke { 50% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: reduce) { .tap, .tap::after { animation: none; } }
   .intro p { margin: 6px 0; }
+  .switch { display: block; text-align: center; border: 1px dashed var(--line); border-radius: 12px; padding: 10px;
+            color: var(--accent); font-weight: 600; text-decoration: none; }
   .ph-url { background: #e9ecef; color: #333; font-size: 11px; padding: 10px 10px 8px; }
   .ph-url span { display: block; background: #fff; border-radius: 12px; padding: 4px 10px; }
   .ph-field { border: 1px solid #bbb; border-radius: 6px; padding: 7px; margin: 4px 0 8px; }
@@ -150,6 +152,7 @@
     </div>
     <button class="lang" id="lang" type="button">English</button>
   </header>
+  <a class="switch" href="google.html" data-t="toGoogle"></a>
 
   <section class="intro">
     <h2 data-t="whatTitle"></h2>
@@ -241,6 +244,7 @@ const T = {
   fr: {
     title: "Ouvre les fenêtres",
     lead: "Configuration en 5 minutes, sur ton téléphone.",
+    toGoogle: "Pas d'Echo? Google Home ou Android : prends la page Google →",
     whatTitle: "C'est quoi?",
     what1: "🏠 Un petit service gratuit pour ton Echo (Alexa).",
     what2: "☀️ Il surveille la météo de ta ville et t'avertit quand il fait assez doux et sec pour ouvrir les fenêtres.",
@@ -321,6 +325,7 @@ const T = {
   en: {
     title: "Open the windows",
     lead: "5-minute setup, on your phone.",
+    toGoogle: "No Echo? Google Home or Android: use the Google page →",
     whatTitle: "What is it?",
     what1: "🏠 A small free service for your Echo (Alexa).",
     what2: "☀️ It watches your town's weather and tells you when it's mild and dry enough to open the windows.",

@@ -16,6 +16,18 @@ Friends-and-family release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
+## UPDATE (2026-10-23): Google Home / Android homes = phone push via ntfy
+- Why not the Nest speaker: Assistant SDK "broadcast" only works from the same home network (not GitHub cloud);
+  Google has no Voice Monkey equivalent; routines can't read a URL or play an MP3 link. Owner chose simple, no Pi.
+- New page `docs/google.html` (FR first, EN toggle), linked from index.html. Name, town, 5-step drawn ntfy guide,
+  "Subscribe in ntfy" = `ntfy://ntfy.sh/<topic>` deep link (Android), iPhone: copy topic + App Store link,
+  Test button POSTs to ntfy.sh. Topic `fenetres-<16 random>` kept in localStorage so reloads keep it.
+- Secret `GHOME_<NAME>` = `{"n","p","l","z"?,"g": topic}`. `alert.py _google_home()`: id `g-<name>`, mode `push`,
+  every alert -> `_ntfy()` (JSON publish to https://ntfy.sh/, tags by kind, priority 4 for close reminders).
+  TEST_HOME `maman` also finds `g-maman`. Topic masked in logs.
+- NOT verified: ntfy.sh is blocked from the cloud workspace, so no real push sent yet; tests 31/31 with the stand-in runner.
+  Page drawings of the ntfy app are from memory, not real screenshots.
+
 ## UPDATE (2026-10-22 late): "Alexa, should I open the windows?" skill
 - `skill/`: Alexa-hosted custom skill (Python). Handler `skill/lambda/lambda_function.py` answers with `alert.answer()`:
   same rules as alerts minus the time slots; Yes + weather joke, or "Not right now:" + top 2 reasons. Locale fr-* = French.

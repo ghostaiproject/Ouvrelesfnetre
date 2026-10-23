@@ -37,6 +37,17 @@ This repo checks every home with its own local weather; friends never touch GitH
 - To remove a home, delete its secret. A broken code is skipped (see the run log), the other homes keep working.
 - Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
 
+## Google Home / Android homes (separate setup)
+Google speakers can't say custom text from the cloud, so Google homes get every alert
+(open and close) as a phone push through the free ntfy app, joke included. No Pi, nothing at home.
+1. Send them: `https://ghostaiproject.github.io/Ouvrelesfnetre/google.html` (the Echo page links to it too).
+   They type a name, pick their town, install ntfy, tap "Subscribe in ntfy", tap Test, then send you the message.
+2. Their message has a secret name like `GHOME_MAMAN` (G for Google, so it never mixes with Echo `HOME_` secrets).
+   Add it the same way: Settings > Secrets and variables > Actions > New repository secret.
+3. Test: Actions > window-alert > Run workflow, home = `maman` (or `g-maman`).
+- Same rules, times and jokes as Echo homes, in their own language and time zone.
+- The ntfy topic in their code is the only key to their alerts: keep it private (it's masked in logs).
+
 ## Notes
 - Cron can run a few minutes late. Normal.
 - `state.json` is committed back about once a day, which also keeps the schedule from auto-disabling after 60 days idle.
