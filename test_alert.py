@@ -3,7 +3,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from alert import close_reason, evaluate, in_alert_window, is_optimal, next_state
-from flair import CLOSE_LINES, build_message, holiday_for
+from flair import CLOSE_LINES, WEATHER_LINES, build_message, holiday_for, weather_kind
 
 TZ = ZoneInfo("America/Toronto")
 GOOD = {"temp": 19, "humidity": 50, "dew_point": 8, "precip": 0, "wind": 10,
@@ -118,3 +118,24 @@ def test_message_builds():
     assert build_message(date(2026, 10, 30), GOOD)[0]
     assert build_message(date(2026, 10, 22), GOOD, close="rain") in CLOSE_LINES["rain"]
     assert build_message(date(2026, 10, 22), GOOD, close="cold") in CLOSE_LINES["cold"]
+
+
+def test_weather_kind():
+    assert weather_kind({**GOOD, "temp": 16}) == "cool"
+    assert weather_kind({**GOOD, "temp": 18}) == "mild"
+    assert weather_kind({**GOOD, "temp": 20}) == "mild"
+    assert weather_kind({**GOOD, "temp": 21}) == "warm"
+    assert weather_kind({**GOOD, "wind": 20}) == "breezy"
+
+
+def test_titles_match_weather_and_temp():
+    d = date(2026, 10, 22)
+    for kind, w in (("cool", {**GOOD, "temp": 16}), ("mild", GOOD),
+                    ("warm", {**GOOD, "temp": 21.6}), ("breezy", {**GOOD, "wind": 25})):
+        allowed = {t for t, _ in WEATHER_LINES[kind]}
+        for seed in range(10):
+            t, _ = build_message(d, w, rng=random.Random(seed))
+            deg = f"{w['temp']:.0f}°"
+            assert deg in t and t.replace(deg, "{deg}") in allowed
+    assert "19 degrees" in build_message(d, GOOD, spoken=True)[0]
+    assert build_message(date(2026, 10, 30), GOOD)[0].endswith(", 19°")  # holiday title
