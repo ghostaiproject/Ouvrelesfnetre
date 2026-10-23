@@ -2,7 +2,7 @@
 
 ## LATEST (2026-10-22, main @ b029aeb)
 Multi-home release is live.
-- Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs). Root `docs/index.html` = chooser (2026-10-23) -> `echo.html` (Echo setup, was index.html) or `phone.html`.
+- Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs). Root `docs/index.html` = project explanation + the two options grouped (2026-10-23) -> `echo.html` (Echo setup, was index.html) or `phone.html`.
   FR first + EN toggle. Steps: name, town search (Open-Meteo geocoding, manual lat/lon fallback),
   Notify Me 7-step drawn tap-by-tap guide, optional Voice Monkey 12-step guide (from voicemonkey.io v3 docs),
   Paste buttons, then "Créer mon code" makes a message: secret name `HOME_<NAME>` + JSON value.
