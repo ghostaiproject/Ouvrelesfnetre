@@ -66,10 +66,32 @@
   .ph-top { background: var(--alexa); color: var(--alexa-ink); padding: 14px 12px 10px; font-weight: 700;
             display: flex; justify-content: space-between; align-items: center; }
   .ph-body { padding: 10px 12px; }
-  .ph-nav { position: absolute; left: 0; right: 0; bottom: 0; display: flex; border-top: 1px solid #ddd;
-            background: #fff; }
-  .ph-nav div { flex: 1; text-align: center; padding: 7px 0 9px; font-size: 9.5px; color: #555; }
-  .ph-nav i { display: block; font-style: normal; font-size: 16px; }
+  /* new dark Alexa+ app */
+  .ax { position: absolute; inset: 0; background: #020b14; color: #e8edf2; }
+  .ax-top { display: grid; grid-template-columns: 26px 1fr 26px; align-items: center; padding: 12px 8px 8px;
+            font-weight: 700; text-align: center; }
+  .ax-top > span:first-child { color: #aab4bf; font-size: 20px; text-align: left; }
+  .ax-body { padding: 2px 10px; }
+  .ax-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .ax-tile { background: #18202a; border-radius: 9px; padding: 8px 6px; font-size: 10.5px; min-height: 34px; }
+  .ax-row { padding: 8px 4px; border-bottom: 1px solid #1c2531; }
+  .ax-search { background: #2a2f36; color: #aab4bf; border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+  .ax-chips { display: flex; gap: 4px; margin-bottom: 8px; }
+  .ax-chips span { border: 1px solid #1e5a99; color: #3fb0e6; border-radius: 12px; padding: 3px 7px; font-size: 10px; }
+  .ax-card { border-radius: 10px; background: #18202a; height: 44px; margin: 0 0 6px; }
+  .ax-tabs { display: flex; justify-content: space-between; font-size: 11px; color: #8b98a6; margin-bottom: 8px;
+             border-bottom: 1px solid #1c2531; }
+  .ax-tabs b { color: #fff; border-bottom: 2px solid #3fb0e6; padding-bottom: 5px; }
+  .ax-blk { border-radius: 9px; overflow: hidden; margin-bottom: 8px; }
+  .ax-blk h6 { background: #4a4f57; margin: 0; padding: 5px 10px; font-size: 10px; letter-spacing: .12em; }
+  .ax-blk div { background: #272c33; padding: 9px 10px; color: #3fb0e6; }
+  .ax-blk div.set { color: #e8edf2; }
+  .ax-save { background: #1554c0; color: #fff; border-radius: 20px; text-align: center; font-weight: 700;
+             padding: 8px; margin-top: 6px; }
+  .ax-ask { position: absolute; left: 8px; right: 8px; bottom: 8px; border-radius: 20px; background: #000;
+            border: 1px solid #1e6bff; box-shadow: 0 0 10px rgba(30,107,255,.55); padding: 7px 12px;
+            color: #8b98a6; font-size: 12px; }
+  .ax-ask b { color: #3fb0e6; margin-right: 8px; }
   .ph-card { border-radius: 10px; background: #eef3f7; height: 54px; margin: 0 0 8px; }
   .ph-list div { padding: 9px 4px; border-bottom: 1px solid #eee; }
   .ph-search { border: 1px solid #bbb; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
@@ -86,8 +108,6 @@
          animation: pulse 1.4s ease-in-out infinite; }
   .tap::after { content: "👆"; position: absolute; right: 8px; bottom: -22px; font-size: 26px;
                 animation: poke 1.4s ease-in-out infinite; z-index: 2; }
-  .ph-nav .tap { outline-offset: -3px; }
-  .ph-nav .tap::after { content: "👇"; bottom: auto; top: -34px; right: 50%; margin-right: -13px; }
   @keyframes pulse { 50% { outline-color: transparent; } }
   @keyframes poke { 50% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: reduce) { .tap, .tap::after { animation: none; } }
@@ -213,7 +233,7 @@ const T = {
     manual: "Ta ville n'apparaît pas?", lat: "Latitude", lon: "Longitude",
     manualHint: "Dans Google Maps, appuie longtemps sur ta maison : les deux nombres en haut sont la latitude et la longitude.",
     s3: "Ton Echo (app Alexa)",
-    guideIntro: "Suis les images. Le cercle orange 👆 montre où appuyer. Les mots peuvent varier un peu selon ta version de l'app.",
+    guideIntro: "Suis les images (nouvelle app Alexa). Le cercle orange 👆 montre où appuyer. Les mots peuvent varier un peu selon ta version de l'app. Tu ne trouves pas un menu? Va dans Paramètres et écris son nom dans la barre en bas.",
     prev: "◀ Retour", next: "Suivant ▶", done: "Terminé ✓", stepOf: (i, n) => `Étape ${i} de ${n}`,
     codeLabel: "Colle ton code ici", paste: "Coller",
     nmHint: "Quand une alerte arrive, ton Echo s'allume en jaune. Demande : « Alexa, quelles sont mes notifications? »",
@@ -221,16 +241,16 @@ const T = {
     vmHint: "Pour que ton Echo dise l'alerte à voix haute (et l'affiche sur l'écran d'un Echo Show). Gratuit, environ 10 minutes. Tu peux sauter cette partie.",
     vmToken: "Ton token Voice Monkey", vmDevice: "L'ID de ton speaker",
     vmSteps: [
-      [`Dans l'app Alexa : <b>Plus</b> → <b>Skills et jeux</b> → <b>🔍</b>. Écris <b>Voice Monkey</b> et touche le résultat.`, "vmSearch"],
+      [`Dans l'app Alexa : <b>Plus</b> → <b>Skills et jeux</b>, puis la barre de recherche en haut. Écris <b>Voice Monkey</b> et touche le résultat.`, "vmSearch"],
       [`Appuie sur <b>Activer pour utilisation</b>. Connecte-toi avec ton compte Amazon et appuie sur <b>Autoriser</b>.`, "vmEnable"],
       [`Sur ton téléphone, ouvre <a href="https://app.voicemonkey.io/speakers" target="_blank" rel="noopener">app.voicemonkey.io</a> et appuie sur <b>Sign in with Amazon</b> (même compte Amazon).`, "vmLogin"],
       [`Dans <b>Speakers</b>, appuie sur <b>Add New Speaker</b>.`, "vmSpeakers"],
       [`Écris le nom <b>Echo</b>, puis appuie sur <b>Create Speaker</b>.`, "vmCreate"],
       [`Ton speaker apparaît. <b>Appui long</b> sur son <b>ID</b> (ex. echo-ab12c) → <b>Copier</b>, puis colle-le plus bas dans « L'ID de ton speaker ». Garde cette page ouverte.`, "vmCard"],
-      [`Retourne dans l'app Alexa : <b>Plus</b> → <b>Routines</b>, puis le <b>+</b> en haut à droite.`, "rtNew"],
-      [`Appuie sur <b>Lorsque ceci se produit</b> → <b>Maison intelligente</b> → <b>Alexa Voice Monkey v3</b> → <b>VM Speakers</b> → <b>Echo</b>.`, "rtWhen"],
-      [`Appuie sur <b>Ajouter une action</b> → <b>Skills</b> → <b>Voice Monkey</b>.`, "rtAction"],
-      [`Sous <b>À partir de</b>, choisis <b>ton Echo</b> (celui qui doit parler). Appuie sur <b>Enregistrer</b>.`, "rtFrom"],
+      [`Retourne dans l'app Alexa : <b>Plus</b> → tuile <b>Routines</b>, puis le <b>⊕</b> en haut à droite.`, "rtNew"],
+      [`Sous <b>Lorsque</b>, appuie sur <b>Ajouter un événement</b> → <b>Maison intelligente</b> → <b>Alexa Voice Monkey v3</b> → <b>VM Speakers</b> → <b>Echo</b>.`, "rtWhen"],
+      [`Sous <b>Alexa va</b>, appuie sur <b>Ajouter une action</b>, descends jusqu'à <b>Skills</b> → <b>Voice Monkey</b>.`, "rtAction"],
+      [`Sous <b>À partir de</b>, choisis <b>ton Echo</b> (celui qui doit parler). Appuie sur le gros bouton <b>Enregistrer</b> en bas.`, "rtFrom"],
       [`Sur app.voicemonkey.io, appuie sur <b>Test</b> à côté de ton speaker. Ton Echo doit parler. Sinon : vérifie que l'Echo n'est pas en sourdine ou en « Ne pas déranger ».`, "vmTest"],
       [`Ouvre <a href="https://app.voicemonkey.io/tokens" target="_blank" rel="noopener">app.voicemonkey.io/tokens</a>. Écris <b>fenetres</b> comme nom, appuie sur <b>Create Token</b>, puis sur <b>⧉ copier</b> à côté du token. Colle-le plus bas.`, "vmToken"],
     ],
@@ -252,19 +272,22 @@ const T = {
     vmSent: "Envoyé! Ton Echo doit parler dans quelques secondes. Il ne fait qu'un son? Refais la routine (étapes 7 à 10).",
     vmBad: "Voice Monkey refuse : vérifie l'ID du speaker et le token.",
     msgHead: "Ouvre les fenêtres : nouvelle maison", secretName: "Nom du secret", value: "Valeur",
-    app: { home: "Accueil", comm: "Communiquer", play: "Écouter", dev: "Appareils", more: "Plus",
-           add: "Ajouter un appareil", lists: "Listes et notes", rem: "Rappels", alarms: "Alarmes",
-           skills: "Skills et jeux", settings: "Paramètres", enable: "ACTIVER POUR UTILISATION",
+    app: { more: "Plus", ask: "Demande à Alexa", music: "Musique et plus", comm: "Communiquer",
+           lists: "Listes et notes", rem: "Rappels et tâches", alarms: "Alarmes et minuteries",
+           explore: "Services Alexa+", skills: "Skills et jeux", settings: "Paramètres", chats: "Discussions",
+           discover: "Découvrir Alexa", searchSkills: "Chercher des skills Alexa", cats: ["Catégories", "Productivité"],
+           enable: "ACTIVER POUR UTILISATION",
            by: "Thomptronics", inbox: "Boîte de réception", subject: "Ton code d'accès Notify Me",
            code: "ton code est ici", hold: "appui long → Copier",
-           routines: "Routines", newRoutine: "Nouvelle routine", when: "Lorsque ceci se produit",
-           voice: "Voix", sched: "Horaire", smart: "Maison intelligente", action: "Ajouter une action",
-           custom: "Personnalisé", skillsA: "Skills", from: "À partir de", save: "Enregistrer",
-           allow: "Autoriser", echoName: "Echo de ta maison" },
+           routines: "Routines", tabs: ["Tes routines", "En vedette", "Activité"],
+           newRoutine: "Nouvelle routine", whenH: "LORSQUE", willH: "ALEXA VA", event: "Ajouter un événement",
+           when: "Lorsque ceci se produit", voice: "Voix", sched: "Horaire", smart: "Maison intelligente",
+           sound: "Détection de sons", alarmsE: "Alarmes", action: "Ajouter une action", addNew: "Ajouter",
+           news: "Nouvelles", info: "Information", skillsA: "Skills", sounds: "Sons",
+           from: "À partir de", save: "Enregistrer", allow: "Autoriser", echoName: "Echo de ta maison" },
     steps: [
-      ["Ouvre l'app <b>Amazon Alexa</b> sur ton téléphone. En bas à droite, appuie sur <b>Plus</b>.", "home"],
-      ["Appuie sur <b>Skills et jeux</b>.", "more"],
-      ["En haut à droite, appuie sur la <b>loupe 🔍</b>.", "skills"],
+      ["Ouvre l'app <b>Amazon Alexa</b> et va dans <b>Plus</b>. Appuie sur la tuile <b>Skills et jeux</b>.", "more"],
+      ["En haut, appuie sur la barre <b>Chercher des skills Alexa</b>.", "skills"],
       ["Écris <b>Notify Me</b>, puis touche le résultat <b>Notify Me</b> (icône jaune).", "search"],
       ["Appuie sur le gros bouton bleu <b>Activer pour utilisation</b>. Rien d'autre à faire dans l'app.", "enable"],
       ["Va près de ton Echo et dis, en anglais : <b>« Alexa, open Notify Me »</b>. Alexa te dit qu'elle t'envoie un courriel.", "say"],
@@ -281,7 +304,7 @@ const T = {
     manual: "Can't find your town?", lat: "Latitude", lon: "Longitude",
     manualHint: "In Google Maps, long-press your home: the two numbers at the top are latitude and longitude.",
     s3: "Your Echo (Alexa app)",
-    guideIntro: "Follow the pictures. The orange circle 👆 shows where to tap. Words may differ a little in your version of the app.",
+    guideIntro: "Follow the pictures (new Alexa app). The orange circle 👆 shows where to tap. Words may differ a little in your version of the app. Can't find a menu? Go to Settings and type its name in the bar at the bottom.",
     prev: "◀ Back", next: "Next ▶", done: "Done ✓", stepOf: (i, n) => `Step ${i} of ${n}`,
     codeLabel: "Paste your code here", paste: "Paste",
     nmHint: "When an alert arrives your Echo glows yellow. Ask: \"Alexa, what are my notifications?\"",
@@ -289,16 +312,16 @@ const T = {
     vmHint: "So your Echo says the alert out loud (and shows it on an Echo Show screen). Free, about 10 minutes. You can skip this part.",
     vmToken: "Your Voice Monkey token", vmDevice: "Your speaker ID",
     vmSteps: [
-      [`In the Alexa app: <b>More</b> → <b>Skills &amp; Games</b> → <b>🔍</b>. Type <b>Voice Monkey</b> and tap the result.`, "vmSearch"],
+      [`In the Alexa app: <b>More</b> → <b>Skills &amp; Games</b>, then the search bar at the top. Type <b>Voice Monkey</b> and tap the result.`, "vmSearch"],
       [`Tap <b>Enable to use</b>. Sign in with your Amazon account and tap <b>Allow</b>.`, "vmEnable"],
       [`On your phone, open <a href="https://app.voicemonkey.io/speakers" target="_blank" rel="noopener">app.voicemonkey.io</a> and tap <b>Sign in with Amazon</b> (same Amazon account).`, "vmLogin"],
       [`In <b>Speakers</b>, tap <b>Add New Speaker</b>.`, "vmSpeakers"],
       [`Type the name <b>Echo</b>, then tap <b>Create Speaker</b>.`, "vmCreate"],
       [`Your speaker shows up. <b>Long-press</b> its <b>ID</b> (e.g. echo-ab12c) → <b>Copy</b>, then paste it below in "Your speaker ID". Keep this page open.`, "vmCard"],
-      [`Back in the Alexa app: <b>More</b> → <b>Routines</b>, then the <b>+</b> top right.`, "rtNew"],
-      [`Tap <b>When this happens</b> → <b>Smart Home</b> → <b>Alexa Voice Monkey v3</b> → <b>VM Speakers</b> → <b>Echo</b>.`, "rtWhen"],
-      [`Tap <b>Add action</b> → <b>Skills</b> → <b>Voice Monkey</b>.`, "rtAction"],
-      [`Under <b>From</b>, pick <b>your Echo</b> (the one that should talk). Tap <b>Save</b>.`, "rtFrom"],
+      [`Back in the Alexa app: <b>More</b> → <b>Routines</b> tile, then the <b>⊕</b> top right.`, "rtNew"],
+      [`Under <b>When</b>, tap <b>Add an event</b> → <b>Smart Home</b> → <b>Alexa Voice Monkey v3</b> → <b>VM Speakers</b> → <b>Echo</b>.`, "rtWhen"],
+      [`Under <b>Alexa will</b>, tap <b>Add an action</b>, scroll down to <b>Skills</b> → <b>Voice Monkey</b>.`, "rtAction"],
+      [`Under <b>From</b>, pick <b>your Echo</b> (the one that should talk). Tap the big <b>Save</b> button at the bottom.`, "rtFrom"],
       [`On app.voicemonkey.io, tap <b>Test</b> next to your speaker. Your Echo should talk. If not: check the Echo isn't muted or on Do Not Disturb.`, "vmTest"],
       [`Open <a href="https://app.voicemonkey.io/tokens" target="_blank" rel="noopener">app.voicemonkey.io/tokens</a>. Type <b>windows</b> as the name, tap <b>Create Token</b>, then <b>⧉ copy</b> next to the token. Paste it below.`, "vmToken"],
     ],
@@ -320,19 +343,22 @@ const T = {
     vmSent: "Sent! Your Echo should talk in a few seconds. Only a chime? Redo the routine (steps 7 to 10).",
     vmBad: "Voice Monkey said no: check the speaker ID and token.",
     msgHead: "Open the windows: new home", secretName: "Secret name", value: "Value",
-    app: { home: "Home", comm: "Communicate", play: "Play", dev: "Devices", more: "More",
-           add: "Add a Device", lists: "Lists & Notes", rem: "Reminders", alarms: "Alarms",
-           skills: "Skills & Games", settings: "Settings", enable: "ENABLE TO USE",
+    app: { more: "More", ask: "Ask Alexa", music: "Music & More", comm: "Communicate",
+           lists: "Lists & Notes", rem: "Reminders & Tasks", alarms: "Alarms & Timers",
+           explore: "Explore Alexa+ Services", skills: "Skills & Games", settings: "Settings", chats: "Chats",
+           discover: "Discover Alexa", searchSkills: "Search Alexa Skills", cats: ["All Categories", "Productivity"],
+           enable: "ENABLE TO USE",
            by: "Thomptronics", inbox: "Inbox", subject: "Your Notify Me access code",
            code: "your code is here", hold: "long-press → Copy",
-           routines: "Routines", newRoutine: "New Routine", when: "When this happens",
-           voice: "Voice", sched: "Schedule", smart: "Smart Home", action: "Add action",
-           custom: "Custom", skillsA: "Skills", from: "From", save: "Save",
-           allow: "Allow", echoName: "Your home's Echo" },
+           routines: "Routines", tabs: ["Your Routines", "Featured", "Activity"],
+           newRoutine: "New Routine", whenH: "WHEN", willH: "ALEXA WILL", event: "Add an event",
+           when: "When this happens", voice: "Voice", sched: "Schedule", smart: "Smart Home",
+           sound: "Sound Detection", alarmsE: "Alarms", action: "Add an action", addNew: "Add New",
+           news: "News", info: "Information", skillsA: "Skills", sounds: "Sounds",
+           from: "From", save: "Save", allow: "Allow", echoName: "Your home's Echo" },
     steps: [
-      ["Open the <b>Amazon Alexa</b> app on your phone. Bottom right, tap <b>More</b>.", "home"],
-      ["Tap <b>Skills &amp; Games</b>.", "more"],
-      ["Top right, tap the <b>magnifying glass 🔍</b>.", "skills"],
+      ["Open the <b>Amazon Alexa</b> app and go to <b>More</b>. Tap the <b>Skills &amp; Games</b> tile.", "more"],
+      ["At the top, tap the <b>Search Alexa Skills</b> bar.", "skills"],
       ["Type <b>Notify Me</b>, then tap the <b>Notify Me</b> result (yellow icon).", "search"],
       ["Tap the big blue <b>Enable to use</b> button. Nothing else to do in the app.", "enable"],
       ["Go near your Echo and say: <b>\"Alexa, open Notify Me\"</b>. Alexa says she's emailing you.", "say"],
@@ -341,27 +367,28 @@ const T = {
   },
 };
 
-// Drawn Alexa app screens. `tap` marks what to press.
+// Drawn Alexa app screens (new dark Alexa+ app). `tap` marks what to press.
 function screen(kind, a) {
-  const nav = (hl) => `<div class="ph-nav">${[["⌂", a.home], ["💬", a.comm], ["▶", a.play], ["💡", a.dev], ["☰", a.more]]
-    .map(([i, l], k) => `<div class="${hl && k === 4 ? "tap" : ""}"><i>${i}</i>${l}</div>`).join("")}</div>`;
   const web = (url, body) => `<div class="ph-url"><span>🔒 ${url}</span></div><div class="ph-body">${body}</div>`;
   const top = (t, right = "") => `<div class="ph-top"><span>${t}</span>${right}</div>`;
+  const app = (t, body, right = "<span></span>", ask = true) => `<div class="ax"><div class="ax-top"><span>‹</span><span>${t}</span>${right}</div>
+    <div class="ax-body">${body}</div>${ask ? `<div class="ax-ask"><b>ɑ</b>${a.ask}</div>` : ""}</div>`;
+  const list = (rows, hit, cls = "ax-row") => rows.map((r, k) => `<div class="${cls}${k === hit ? " tap" : ""}">${r}</div>`).join("");
+  const skill = (q, name, icon, by, bg = "") => `<div class="ax-search">🔍 ${q}</div>
+    <div class="ph-skill tap"><div class="ph-icon"${bg}>${icon}</div><div><b>${name}</b><br><small>${by}</small><br>★★★★☆</div></div>`;
+  const vmBg = ' style="background:#6c3ce1"';
   switch (kind) {
-    case "home": return top("alexa") + `<div class="ph-body"><div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div></div>` + nav(true);
-    case "more": return top(a.more) + `<div class="ph-body ph-list">
-        <div>${a.add}</div><div>${a.lists}</div><div>${a.rem}</div><div>${a.alarms}</div>
-        <div class="tap">🎮 ${a.skills}</div><div>⚙ ${a.settings}</div></div>` + nav(false);
-    case "skills": return top(a.skills, `<span class="tap" style="padding:2px 6px">🔍</span>`)
-        + `<div class="ph-body"><div class="ph-card"></div><div class="ph-card"></div><div class="ph-card"></div></div>` + nav(false);
-    case "search": return top(a.skills) + `<div class="ph-body"><div class="ph-search">🔍 Notify Me</div>
-        <div class="ph-skill tap"><div class="ph-icon">🔔</div><div><b>Notify Me</b><br><small>${a.by}</small><br>★★★★☆</div></div></div>` + nav(false);
-    case "enable": return top("Notify Me") + `<div class="ph-body"><div class="ph-skill"><div class="ph-icon">🔔</div>
-        <div><b>Notify Me</b><br><small>${a.by}</small></div></div><div class="ph-btn tap">${a.enable}</div></div>`;
-    case "vmSearch": return top(a.skills) + `<div class="ph-body"><div class="ph-search">🔍 Voice Monkey</div>
-        <div class="ph-skill tap"><div class="ph-icon" style="background:#6c3ce1">🐒</div><div><b>Voice Monkey</b><br><small>Voice Monkey</small><br>★★★★☆</div></div></div>` + nav(false);
-    case "vmEnable": return top("Voice Monkey") + `<div class="ph-body"><div class="ph-skill"><div class="ph-icon" style="background:#6c3ce1">🐒</div>
-        <div><b>Voice Monkey</b></div></div><div class="ph-btn">${a.enable}</div><div class="ph-amz tap">amazon · ${a.allow}</div></div>`;
+    case "more": return app(a.more, `<div class="ax-grid">${list(["♫ " + a.music, "◯ " + a.comm, "☰ " + a.lists, "☑ " + a.rem,
+        "↻ " + a.routines, "⏰ " + a.alarms, "▦ " + a.explore, "★ " + a.skills], 7, "ax-tile")}</div>
+        <div class="ax-row" style="margin-top:6px">⚙ ${a.settings}</div><div class="ax-row">↺ ${a.chats}</div>`);
+    case "skills": return app(a.discover, `<div class="ax-search tap">🔍 ${a.searchSkills}</div>
+        <div class="ax-chips"><span>${a.cats[0]}</span><span>${a.cats[1]}</span></div><div class="ax-card" style="height:90px"></div><div class="ax-card"></div>`);
+    case "search": return app(a.discover, skill("Notify Me", "Notify Me", "🔔", a.by));
+    case "enable": return app("Notify Me", `<div class="ph-skill"><div class="ph-icon">🔔</div>
+        <div><b>Notify Me</b><br><small>${a.by}</small></div></div><div class="ph-btn tap">${a.enable}</div>`);
+    case "vmSearch": return app(a.discover, skill("Voice Monkey", "Voice Monkey", "🐒", "Voice Monkey", vmBg));
+    case "vmEnable": return app("Voice Monkey", `<div class="ph-skill"><div class="ph-icon"${vmBg}>🐒</div>
+        <div><b>Voice Monkey</b></div></div><div class="ph-btn">${a.enable}</div><div class="ph-amz tap">amazon · ${a.allow}</div>`);
     case "vmLogin": return web("app.voicemonkey.io", `<div style="text-align:center;margin-top:40px"><div style="font-size:40px">🐒</div><b>Voice Monkey</b></div>
         <div class="ph-amz tap">Sign in with Amazon</div>`);
     case "vmSpeakers": return web("app.voicemonkey.io/speakers", `<b>Speakers</b><p class="ph-small">0 speakers</p><div class="ph-vmbtn tap">+ Add New Speaker</div>`);
@@ -369,15 +396,15 @@ function screen(kind, a) {
         <div class="ph-field">Echo</div><div class="ph-vmbtn tap">Create Speaker</div>`);
     case "vmCard": return web("app.voicemonkey.io/speakers", `<b>Speakers</b><div class="ph-field" style="margin-top:10px"><b>Echo</b><br>
         <span class="ph-id tap">echo-ab12c</span><div class="ph-small" style="margin-top:22px">Test · Edit</div></div>`);
-    case "rtNew": return top(a.routines, `<span class="tap" style="padding:0 8px;font-size:18px">+</span>`)
-        + `<div class="ph-body"><div class="ph-card"></div><div class="ph-card"></div></div>` + nav(false);
-    case "rtWhen": return top(a.when) + `<div class="ph-body ph-list"><div>${a.voice}</div><div>${a.sched}</div>
-        <div class="tap">🏠 ${a.smart}</div><div style="padding-left:16px" class="ph-small">› Alexa Voice Monkey v3<br>› VM Speakers<br>› Echo</div></div>`;
-    case "rtAction": return top(a.newRoutine) + `<div class="ph-body ph-list"><div>✓ ${a.when}: Echo</div>
-        <div>${a.action}</div><div>${a.custom}</div><div class="tap">${a.skillsA} › Voice Monkey</div></div>`;
-    case "rtFrom": return top(a.newRoutine, `<span class="tap" style="padding:0 6px;font-size:12px">${a.save}</span>`)
-        + `<div class="ph-body ph-list"><div>✓ ${a.when}: Echo</div><div>✓ Voice Monkey</div>
-        <div>${a.from}: <b>${a.echoName}</b></div></div>`;
+    case "rtNew": return app(a.routines, `<div class="ax-tabs"><b>${a.tabs[0]}</b><span>${a.tabs[1]}</span><span>${a.tabs[2]}</span></div>
+        <div class="ax-card"></div><div class="ax-card"></div>`, `<span class="tap" style="font-size:18px">⊕</span>`);
+    case "rtWhen": return app(a.when, list([a.voice, a.sched, "🏠 " + a.smart], 2)
+        + `<div style="padding:4px 0 6px 18px;color:#8b98a6;font-size:11px">› Alexa Voice Monkey v3<br>› VM Speakers<br>› Echo</div>`
+        + list([a.sound, a.alarmsE], -1));
+    case "rtAction": return app(a.addNew, list([a.info, a.news, a.skillsA + " › Voice Monkey", a.sounds], 2));
+    case "rtFrom": return app(a.newRoutine, `<div class="ax-blk"><h6>${a.whenH}</h6><div class="set">Alexa Voice Monkey v3: Echo</div></div>
+        <div class="ax-blk"><h6>${a.willH}</h6><div class="set">Voice Monkey<br><small style="color:#8b98a6">${a.from}: <b style="color:#fff">${a.echoName}</b></small></div></div>
+        <div class="ax-save tap">${a.save}</div>`, "<span></span>", false);
     case "vmTest": return web("app.voicemonkey.io/speakers", `<b>Speakers</b><div class="ph-field" style="margin-top:10px"><b>Echo</b><br>
         <span class="ph-id">echo-ab12c</span><div style="margin-top:10px"><span class="ph-vmbtn tap" style="display:inline-block;margin:0;padding:6px 14px">Test</span></div></div>
         <div style="text-align:center;margin-top:16px;font-size:22px">🔊</div>`);
