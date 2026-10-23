@@ -20,7 +20,7 @@ Multi-home release is live.
 - Repo + Actions logs are PUBLIC, so homes now use private ids: `anon_id()` = "h-"/"p-" + sha256(secret value)[:10].
   state.json keys and every log line use that id; names/towns/codes never printed (test_names_and_towns_never_reach_public_logs).
   TEST_HOME still picks by typed name or secret name via in-memory `aliases`. Changing a home's code resets its state (fine).
-- "Tes données / Your data" box on echo.html and phone.html (no logging/tracking, typed data only builds the setup code,
+- "Tes données / Your data" box on the main page (index.html, under the intro); setup pages have a "← Menu" pill instead (no logging/tracking, typed data only builds the setup code,
   town rounded ~100 m for weather only, code = encrypted secret, third parties: Open-Meteo search + Test buttons). Index footer too.
 
 ## UPDATE (2026-10-23, later): renamed "Google" -> "phone" (owner: it's the no-Echo crutch, not a Google thing)
