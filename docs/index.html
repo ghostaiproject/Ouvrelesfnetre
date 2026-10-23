@@ -45,8 +45,11 @@
   .go { display: block; text-align: center; text-decoration: none; font-weight: 700; border-radius: 10px; padding: 12px;
         background: var(--accent); color: var(--accent-ink); }
   .go.alt { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-  .fine { color: var(--muted); font-size: .9rem; margin-top: 26px; border-top: 1px solid var(--line); padding-top: 14px; }
-  .fine p { margin: 4px 0; }
+  .privacy { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .privacy b { display: block; margin-bottom: 4px; }
+  .privacy dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: .92rem; }
+  .privacy dd { margin: 0; }
+  .privacy p { margin: 8px 0 0; font-size: .82rem; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -57,6 +60,17 @@
     <div class="win" aria-hidden="true">🪟</div>
     <h1 data-t="title"></h1>
     <p class="tag" data-t="tag"></p>
+  </div>
+
+  <div class="privacy">
+    <b data-t="pvTitle"></b>
+    <dl>
+      <dt>🔒</dt><dd data-t="pv1"></dd>
+      <dt>📝</dt><dd data-t="pv2"></dd>
+      <dt>📍</dt><dd data-t="pv3"></dd>
+      <dt>🗝️</dt><dd data-t="pv4"></dd>
+    </dl>
+    <p data-t="pv5"></p>
   </div>
 
   <h2 data-t="howTitle"></h2>
@@ -97,15 +111,11 @@
     </div>
   </div>
 
-  <div class="fine">
-    <p data-t="f1"></p>
-    <p data-t="f2"></p>
-    <p data-t="f3"></p>
-  </div>
 </main>
 <script>
 const T = {
   fr: {
+    pvTitle: "Tes données", pv1: "Rien n'est enregistré ni suivi : pas de compte, pas de statistiques, pas de témoins", pv2: "Ce que tu entres sert seulement à la configuration", pv3: "Ta ville, arrondie à environ 100 m, sert juste à la météo", pv4: "Ton code reste un secret chiffré, jamais dans les journaux", pv5: "La recherche de ville passe par Open-Meteo, et les boutons Tester parlent directement au service choisi (ntfy, Notify Me ou Voice Monkey).",
     title: "Ouvre les fenêtres",
     tag: "Un petit service gratuit qui te dit quand il fait assez doux et sec pour aérer, et quand refermer.",
     howTitle: "Comment ça marche",
@@ -131,11 +141,9 @@ const T = {
     p2: "Android : lue à voix haute, seulement quand tu es à la maison (MacroDroid)",
     p3: "Marche partout où ton téléphone a Internet",
     phoneGo: "Configurer mon téléphone →",
-    f1: "🔒 Aucune donnée enregistrée ni suivie : pas de compte, pas de statistiques, pas de témoins.",
-    f2: "📝 Ce que tu entres sert seulement à la configuration. Ta ville (arrondie à environ 100\u00a0m) sert uniquement à lire la météo.",
-    f3: "💸 Gratuit. Ton code reste un secret chiffré, jamais affiché dans les journaux.",
   },
   en: {
+    pvTitle: "Your data", pv1: "Nothing is logged or tracked: no account, no analytics, no cookies", pv2: "What you type is only used for setup", pv3: "Your town, rounded to about 100 m, is only used for the weather", pv4: "Your code stays an encrypted secret, never in logs", pv5: "Town search goes through Open-Meteo, and the Test buttons talk straight to the chosen service (ntfy, Notify Me or Voice Monkey).",
     title: "Open the windows",
     tag: "A small free service that tells you when it's mild and dry enough to air out, and when to close up.",
     howTitle: "How it works",
@@ -161,9 +169,6 @@ const T = {
     p2: "Android: read out loud, only when you are home (MacroDroid)",
     p3: "Works anywhere your phone has internet",
     phoneGo: "Set up my phone →",
-    f1: "🔒 No data logged or tracked: no account, no analytics, no cookies.",
-    f2: "📝 What you type is only used for setup. Your town (rounded to about 100\u00a0m) is only used to read the weather.",
-    f3: "💸 Free. Your code stays an encrypted secret, never shown in logs.",
   },
 };
 let lang = "fr";
