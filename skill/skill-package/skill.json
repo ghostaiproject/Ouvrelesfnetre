@@ -1,0 +1,39 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-CA": {
+          "name": "Window Check",
+          "summary": "Tells you if it's a good time to open the windows.",
+          "description": "Tells you if it's a good time to open the windows.",
+          "examplePhrases": [
+            "Alexa, open window check"
+          ]
+        },
+        "en-US": {
+          "name": "Window Check",
+          "summary": "Tells you if it's a good time to open the windows.",
+          "description": "Tells you if it's a good time to open the windows.",
+          "examplePhrases": [
+            "Alexa, open window check"
+          ]
+        },
+        "fr-CA": {
+          "name": "Conseil fenêtres",
+          "summary": "Te dit si c'est le bon moment d'ouvrir les fenêtres.",
+          "description": "Te dit si c'est le bon moment d'ouvrir les fenêtres.",
+          "examplePhrases": [
+            "Alexa, ouvre conseil fenêtres"
+          ]
+        }
+      },
+      "isAvailableWorldwide": true,
+      "category": "WEATHER",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {}
+    },
+    "manifestVersion": "1.0"
+  }
+}

@@ -16,6 +16,14 @@ Friends-and-family release is live.
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
+## UPDATE (2026-10-22 late): "Alexa, should I open the windows?" skill
+- `skill/`: Alexa-hosted custom skill (Python). Handler `skill/lambda/lambda_function.py` answers with `alert.answer()`:
+  same rules as alerts minus the time slots; Yes + weather joke, or "Not right now:" + top 2 reasons. Locale fr-* = French.
+- Invocation: "window check" (en-CA/en-US), "conseil fenêtres" (fr-CA). Phrase "should I open the windows" = Alexa routine
+  Voice trigger -> Customized action "open window check". Steps: `skill/SETUP.md`.
+- `skill/lambda/alert.py` + `flair.py` are copies: run `python skill/build.py` and redeploy after rule/joke changes.
+- NOT done yet: the skill is not created in the developer console; routine not made. Not tested on a real Echo.
+
 ## UPDATE (2026-10-22 late): FR/EN alerts, 25 jokes per pool, compact code, sun check
 - Each home has a language: `lang` (en|fr). Setup page saves the page's FR/EN choice; your own home uses repo var `ALERT_LANG` (default en).
   Titles, jokes, weather line and spoken text all follow it (flair.py `build_message(..., lang=)`).
