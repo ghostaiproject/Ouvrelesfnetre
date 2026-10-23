@@ -386,7 +386,7 @@ def main() -> int:
     homes = load_homes()
     mask_secrets(homes)
     if force and test_home != "all":
-        # a phone home answers to its name too ("maman" finds "p-maman")
+        # a phone home answers to its name too ("chalet" finds "p-chalet")
         homes = [h for h in homes if h["id"] in (test_home, "p-" + test_home)]
         if not homes:
             print(f"ERROR no home called {test_home!r}.", file=sys.stderr)

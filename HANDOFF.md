@@ -1,7 +1,7 @@
 # HANDOFF
 
 ## LATEST (2026-10-22, main @ b029aeb)
-Friends-and-family release is live.
+Multi-home release is live.
 - Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs). Root `docs/index.html` = chooser (2026-10-23) -> `echo.html` (Echo setup, was index.html) or `phone.html`.
   FR first + EN toggle. Steps: name, town search (Open-Meteo geocoding, manual lat/lon fallback),
   Notify Me 7-step drawn tap-by-tap guide, optional Voice Monkey 12-step guide (from voicemonkey.io v3 docs),
@@ -12,7 +12,7 @@ Friends-and-family release is live.
   Per-home weather/tz/state; one broken home never stops others; Save state step `if: always()`.
   Codes `::add-mask::`ed; errors print only type + HTTP status (URLs carry codes/locations; repo is PUBLIC).
   Run workflow has a `home` input (default main, a name, or all).
-- Adding a home: friend sends message -> repo Settings > Secrets > Actions > New secret (name + value)
+- Adding a home: the person sends their message -> repo Settings > Secrets > Actions > New secret (name + value)
   -> Actions > Run workflow, home = their name.
 - Tests: 22 pass locally (Python 3.12 at %LOCALAPPDATA%\Programs\Python\Python312, needs `pip install tzdata` on Windows).
 
@@ -28,7 +28,7 @@ Friends-and-family release is live.
   Test button POSTs to ntfy.sh. Topic `fenetres-<16 random>` kept in localStorage so reloads keep it.
 - Secret `GHOME_<NAME>` = `{"n","p","l","z"?,"g": topic}`. `alert.py _google_home()`: id `g-<name>`, mode `push`,
   every alert -> `_ntfy()` (JSON publish to https://ntfy.sh/, tags by kind, priority 4 for close reminders).
-  TEST_HOME `maman` also finds `g-maman`. Topic masked in logs.
+  TEST_HOME `chalet` also finds `p-chalet`. Topic masked in logs.
 - Owner tested: deep link subscribed directly (no dialog), page Test push arrived on S23. Nest stays silent (expected).
 - Read aloud: optional MacroDroid section on google.html (9 drawn steps: Notification Received from ntfy ->
   Speak Text "[notification_title]. [notification]"). Push homes now get the spoken wording ("19 degrés") and
@@ -67,7 +67,7 @@ Notify Me guide = 7 steps (step 6: say "Alexa, open Notify Me" to the Echo, then
   New Routine = WHEN "Add an event" / ALEXA WILL "Add an action" + big Save at bottom. Home = ≡ menu top left -> More.
 - Guide screens are drawings: French Alexa menu names (esp. routine: "Lorsque ceci se produit",
   "Maison intelligente", "À partir de") not checked on a real phone.
-- No friend home added yet; no real Notify Me test for a HOME_ secret.
+- No other home added yet; no real Notify Me test for a HOME_ secret.
 - Alert texts are English only (flair.py).
 
 ## Project

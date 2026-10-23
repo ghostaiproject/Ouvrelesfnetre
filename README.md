@@ -25,15 +25,15 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
 3. Actions tab > window-alert > Run workflow > Run workflow. That sends one test alert right now (to your home only).
 4. Green check = it worked. The Echo should glow yellow.
 
-## Friends and family (other homes)
-This repo checks every home with its own local weather; friends never touch GitHub.
+## Other homes
+This repo checks every home with its own local weather; other homes never touch GitHub.
 1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (a chooser, `docs/index.html`: Echo -> `docs/echo.html`, no Echo -> `docs/phone.html`;
    turn on once at Settings > Pages > Deploy from branch `main`, folder `/docs`).
    French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
    and paste its code. The page gives them a message to send back to you.
-2. Their message has a secret name (like `HOME_MAMAN`) and a value. Repo > Settings > Secrets and
+2. Their message has a secret name (like `HOME_CHALET`) and a value. Repo > Settings > Secrets and
    variables > Actions > New repository secret: paste the name, paste the value.
-3. Test it: Actions > window-alert > Run workflow, type their name (`maman`) in the home box. `all` tests every home.
+3. Test it: Actions > window-alert > Run workflow, type their name (`chalet`) in the home box. `all` tests every home.
 - To remove a home, delete its secret. A broken code is skipped (see the run log), the other homes keep working.
 - Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
 
@@ -42,9 +42,9 @@ For anyone without an Echo (a crutch, any Android or iPhone): every alert (open 
 phone push through the free ntfy app, joke included. Optional: MacroDroid reads it out loud. Nothing at home.
 1. Send them the main link; they tap "No Echo? Your phone" (or send `.../Ouvrelesfnetre/phone.html` directly).
    They type a name, pick their town, install ntfy, tap "Subscribe in ntfy", tap Test, then send you the message.
-2. Their message has a secret name like `PHONE_MAMAN`, never mixed with Echo `HOME_` secrets.
+2. Their message has a secret name like `PHONE_CHALET`, never mixed with Echo `HOME_` secrets.
    Add it the same way: Settings > Secrets and variables > Actions > New repository secret.
-3. Test: Actions > window-alert > Run workflow, home = `maman` (or `p-maman`).
+3. Test: Actions > window-alert > Run workflow, home = `chalet` (or `p-chalet`).
 - Same rules, times and jokes as Echo homes, in their own language and time zone, worded for speech ("19 degrees").
 - The ntfy topic in their code is the only key to their alerts: keep it private (it's masked in logs).
 - Old `GHOME_` secrets (first name of this) still work.
