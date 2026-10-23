@@ -22,12 +22,10 @@
   h1 { font-size: 1.9rem; line-height: 1.15; margin: 10px 0 8px; }
   .tag { color: var(--muted); margin: 0 auto; max-width: 30em; }
   h2 { font-size: 1.15rem; margin: 30px 0 12px; }
-  .steps { display: grid; gap: 10px; }
-  .step { display: flex; gap: 14px; align-items: flex-start; background: var(--card); border: 1px solid var(--line);
-          border-radius: 14px; padding: 14px; }
-  .step .i { font-size: 26px; width: 36px; text-align: center; flex: none; }
-  .step b { display: block; }
-  .step span.d { color: var(--muted); font-size: .95rem; }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .step { display: flex; gap: 8px; align-items: center; background: var(--card); border: 1px solid var(--line);
+          border-radius: 12px; padding: 10px; font-size: .9rem; font-weight: 600; line-height: 1.25; }
+  .step .i { font-size: 22px; flex: none; }
   .rules { background: var(--sky); border-radius: 14px; padding: 14px 16px; }
   .rules dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
   .rules dt { font-size: 20px; }
@@ -63,10 +61,10 @@
 
   <h2 data-t="howTitle"></h2>
   <div class="steps">
-    <div class="step"><span class="i">🌤️</span><span><b data-t="h1"></b><span class="d" data-t="h1d"></span></span></div>
-    <div class="step"><span class="i">🔔</span><span><b data-t="h2"></b><span class="d" data-t="h2d"></span></span></div>
-    <div class="step"><span class="i">🌧️</span><span><b data-t="h3"></b><span class="d" data-t="h3d"></span></span></div>
-    <div class="step"><span class="i">😄</span><span><b data-t="h4"></b><span class="d" data-t="h4d"></span></span></div>
+    <div class="step"><span class="i">🌤️</span><span data-t="h1"></span></div>
+    <div class="step"><span class="i">🔔</span><span data-t="h2"></span></div>
+    <div class="step"><span class="i">🌧️</span><span data-t="h3"></span></div>
+    <div class="step"><span class="i">😄</span><span data-t="h4"></span></div>
   </div>
 
   <h2 data-t="goodTitle"></h2>
@@ -111,10 +109,10 @@ const T = {
     title: "Ouvre les fenêtres",
     tag: "Un petit service gratuit qui te dit quand il fait assez doux et sec pour aérer, et quand refermer.",
     howTitle: "Comment ça marche",
-    h1: "La météo de ta ville, aux 15 minutes", h1d: "Température, humidité, pluie et vent, vérifiés pour ton coin.",
-    h2: "Une alerte quand c'est le bon moment", h2d: "Au maximum une fois par jour, pour ne pas te harceler.",
-    h3: "Un rappel pour fermer", h3d: "Si la pluie s'en vient ou qu'il commence à faire froid, après une alerte d'ouverture.",
-    h4: "Avec une blague de fenêtre", h4d: "Selon la météo et les fêtes, en français ou en anglais.",
+    h1: "Météo de ta ville aux 15 min",
+    h2: "Alerte au bon moment, max 1 par jour",
+    h3: "Rappel de fermer : pluie ou froid",
+    h4: "Une blague de fenêtre en prime",
     goodTitle: "C'est quoi, un bon moment?",
     r1: "Entre 15 et 22 °C, sans descendre sous 13 °C bientôt",
     r2: "Humidité entre 30 et 65 %, pas de point de rosée collant",
@@ -141,10 +139,10 @@ const T = {
     title: "Open the windows",
     tag: "A small free service that tells you when it's mild and dry enough to air out, and when to close up.",
     howTitle: "How it works",
-    h1: "Your town's weather, every 15 minutes", h1d: "Temperature, humidity, rain and wind, checked for your area.",
-    h2: "An alert when it's the right moment", h2d: "At most once a day, so it never nags.",
-    h3: "A reminder to close", h3d: "If rain is coming or it's getting cold, after an open alert.",
-    h4: "With a window joke", h4d: "Matched to the weather and holidays, in French or English.",
+    h1: "Your town's weather every 15 min",
+    h2: "Alert at the right time, max 1 a day",
+    h3: "Close reminder: rain or cold",
+    h4: "A window joke on the side",
     goodTitle: "What's a good moment?",
     r1: "Between 15 and 22 °C, not dropping under 13 °C soon",
     r2: "Humidity between 30 and 65 %, no sticky dew point",
