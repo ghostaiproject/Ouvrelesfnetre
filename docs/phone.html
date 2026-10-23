@@ -189,10 +189,9 @@
     </details>
   </section>
 
-  <section>
-    <details id="mdBox">
-      <summary data-t="mdTitle"></summary>
-      <p class="hint" data-t="mdHint"></p>
+  <section id="mdBox">
+    <h2><span class="n">4</span><span data-t="mdTitle"></span></h2>
+    <p class="hint" data-t="mdHint"></p>
       <div class="guide" id="mdGuide"></div>
       <a class="main wide" target="_blank" rel="noopener"
          href="https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid" data-t="mdInstall"></a>
@@ -200,14 +199,13 @@
       <div class="topic" id="mdText">[notification_title]. [notification]</div>
       <button class="ghost wide" id="copyMd" type="button" data-t="mdCopy"></button>
       <p class="hint" data-t="mdVoice"></p>
-    </details>
   </section>
 
   <button class="main wide" id="make" type="button" data-t="make"></button>
   <p class="err" id="makeErr"></p>
 
   <section id="result">
-    <h2><span class="n">4</span><span data-t="s4"></span></h2>
+    <h2><span class="n">5</span><span data-t="s4"></span></h2>
     <p data-t="sendIt"></p>
     <pre id="out"></pre>
     <div class="btns">
@@ -255,8 +253,8 @@ const T = {
     iphone: "Tu as un iPhone?",
     iphoneHow: "Installe ntfy depuis l'App Store. Dans ntfy, appuie sur +, colle ce sujet, puis « Subscribe ». Garde ce sujet secret : c'est l'adresse de tes alertes.",
     copyTopic: "Copier le sujet", topicCopied: "Copié ✓",
-    mdTitle: "Option Android : seulement à la maison, et à voix haute 🏠🔊",
-    mdHint: "Avec l'app gratuite MacroDroid : quand ton téléphone est sur le Wi-Fi de ta maison, il dit l'alerte à voix haute, comme un Echo. Ailleurs, la notification s'efface toute seule (inutile si tu n'es pas là). Environ 7 minutes. Les menus de MacroDroid sont souvent en anglais : les mots en orange sont ceux à toucher.",
+    mdTitle: "Android : à la maison seulement, à voix haute",
+    mdHint: "iPhone? Saute cette étape. Sur Android, avec l'app gratuite MacroDroid : quand ton téléphone est sur le Wi-Fi de ta maison, il dit l'alerte à voix haute, comme un Echo. Ailleurs, la notification s'efface toute seule (inutile si tu n'es pas là). Environ 7 minutes. Les menus de MacroDroid sont souvent en anglais : les mots en orange sont ceux à toucher.",
     mdInstall: "Installer MacroDroid", mdTextLabel: "Le texte à coller (étape 7)", mdCopy: "Copier le texte",
     mdVoice: "Accent bizarre? Paramètres du téléphone → Gestion générale → Synthèse vocale → langue Français (Canada).",
     mdSteps: [
@@ -318,8 +316,8 @@ const T = {
     iphone: "Got an iPhone?",
     iphoneHow: "Install ntfy from the App Store. In ntfy, tap +, paste this topic, then \"Subscribe\". Keep this topic secret: it's the address of your alerts.",
     copyTopic: "Copy the topic", topicCopied: "Copied ✓",
-    mdTitle: "Android option: only at home, and out loud 🏠🔊",
-    mdHint: "With the free MacroDroid app: when your phone is on your home Wi-Fi, it says the alert out loud, like an Echo. Anywhere else, the notification clears itself (no use if you're not home). About 7 minutes. The orange words are what to tap.",
+    mdTitle: "Android: only at home, out loud",
+    mdHint: "iPhone? Skip this step. On Android, with the free MacroDroid app: when your phone is on your home Wi-Fi, it says the alert out loud, like an Echo. Anywhere else, the notification clears itself (no use if you're not home). About 7 minutes. The orange words are what to tap.",
     mdInstall: "Install MacroDroid", mdTextLabel: "The text to paste (step 7)", mdCopy: "Copy the text",
     mdVoice: "Weird accent? Phone Settings → General management → Text-to-speech → pick the language of your alerts.",
     mdSteps: [
