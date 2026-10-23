@@ -160,6 +160,8 @@
       <button class="ghost" type="button" data-paste="code" data-t="paste"></button>
     </div>
     <p class="hint" data-t="nmHint"></p>
+    <button class="ghost wide" id="testNm" type="button" data-t="testNm"></button>
+    <p class="hint" id="nmResult" aria-live="polite"></p>
   </section>
 
   <section>
@@ -177,6 +179,8 @@
         <input id="vmToken" autocomplete="off" spellcheck="false">
         <button class="ghost" type="button" data-paste="vmToken" data-t="paste"></button>
       </div>
+      <button class="ghost wide" id="testVm" type="button" data-t="testVm"></button>
+      <p class="hint" id="vmResult" aria-live="polite"></p>
     </details>
   </section>
 
@@ -241,6 +245,12 @@ const T = {
     errSearch: "Aucune ville trouvée. Vérifie l'orthographe ou utilise « Ta ville n'apparaît pas? ».",
     errNet: "La recherche ne marche pas en ce moment. Utilise « Ta ville n'apparaît pas? ».",
     errPaste: "Ton téléphone bloque « Coller » ici : appuie longtemps dans la case, puis « Coller ».",
+    testNm: "🔔 Tester (Echo jaune)", testVm: "🔊 Faire parler mon Echo", testing: "Envoi…",
+    testTitle: "Test réussi", testSpeech: "Test réussi! Ton Echo est prêt pour Ouvre les fenêtres.",
+    nmNeed: "Colle d'abord ton code Notify Me.", vmNeed: "Colle d'abord l'ID de ton speaker et ton token.",
+    nmSent: "Envoyé. Dans quelques secondes, ton Echo doit s'allumer en jaune. Rien? Vérifie le code.",
+    vmSent: "Envoyé! Ton Echo doit parler dans quelques secondes. Il ne fait qu'un son? Refais la routine (étapes 7 à 10).",
+    vmBad: "Voice Monkey refuse : vérifie l'ID du speaker et le token.",
     msgHead: "Ouvre les fenêtres : nouvelle maison", secretName: "Nom du secret", value: "Valeur",
     app: { home: "Accueil", comm: "Communiquer", play: "Écouter", dev: "Appareils", more: "Plus",
            add: "Ajouter un appareil", lists: "Listes et notes", rem: "Rappels", alarms: "Alarmes",
@@ -303,6 +313,12 @@ const T = {
     errSearch: "No town found. Check the spelling or use \"Can't find your town?\".",
     errNet: "Search isn't working right now. Use \"Can't find your town?\".",
     errPaste: "Your phone blocks \"Paste\" here: long-press in the box, then \"Paste\".",
+    testNm: "🔔 Test (yellow Echo)", testVm: "🔊 Make my Echo talk", testing: "Sending…",
+    testTitle: "Test worked", testSpeech: "Test worked! Your Echo is ready for Open the windows.",
+    nmNeed: "Paste your Notify Me code first.", vmNeed: "Paste your speaker ID and token first.",
+    nmSent: "Sent. In a few seconds your Echo should glow yellow. Nothing? Check the code.",
+    vmSent: "Sent! Your Echo should talk in a few seconds. Only a chime? Redo the routine (steps 7 to 10).",
+    vmBad: "Voice Monkey said no: check the speaker ID and token.",
     msgHead: "Open the windows: new home", secretName: "Secret name", value: "Value",
     app: { home: "Home", comm: "Communicate", play: "Play", dev: "Devices", more: "More",
            add: "Add a Device", lists: "Lists & Notes", rem: "Reminders", alarms: "Alarms",
@@ -477,6 +493,32 @@ $("copy").onclick = async () => {
   $("copied").textContent = T[lang].copied;
 };
 $("share").onclick = () => navigator.share({ text: message }).catch(() => {});
+
+// Quick tests: send one alert straight to the Echo, same calls as alert.py.
+async function test(btn, out, run) {
+  btn.disabled = true; $(out).textContent = T[lang].testing;
+  try { $(out).textContent = await run(T[lang]); }
+  catch (e) { $(out).textContent = T[lang].errNet; }
+  btn.disabled = false;
+}
+$("testNm").onclick = () => test($("testNm"), "nmResult", async (t) => {
+  const code = $("code").value.trim();
+  if (!code) return t.nmNeed;
+  // Notify Me sends no CORS headers: the alert still goes out, but the reply can't be read.
+  await fetch("https://api.notifymyecho.com/v1/NotifyMe?" + new URLSearchParams(
+    { notification: t.testSpeech, title: t.testTitle, accessCode: code }), { mode: "no-cors" });
+  return t.nmSent;
+});
+$("testVm").onclick = () => test($("testVm"), "vmResult", async (t) => {
+  const token = $("vmToken").value.trim(), device = $("vmDevice").value.trim();
+  if (!token || !device) return t.vmNeed;
+  const r = await fetch("https://api-v3.voicemonkey.io/announce", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, device, speech: t.testSpeech,
+                           text_display: t.testTitle + "\n" + t.testSpeech, display_seconds: 15 }),
+  });
+  return r.ok ? t.vmSent : t.vmBad;
+});
 
 render();
 </script>
