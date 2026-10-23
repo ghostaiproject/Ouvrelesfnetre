@@ -141,6 +141,9 @@
   .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
   .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
   .dots span.on { background: var(--accent); }
+  .privacy ul { margin: 0; padding-left: 20px; }
+  .privacy li { margin: 4px 0; font-size: .95rem; }
+  .privacy .hint { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -160,6 +163,12 @@
     <p data-t="what2"></p>
     <p data-t="what3"></p>
     <p data-t="what4"></p>
+  </section>
+
+  <section class="privacy">
+    <h2>🔒 <span data-t="pvTitle"></span></h2>
+    <ul><li data-t="pv1"></li><li data-t="pv2"></li><li data-t="pv3"></li><li data-t="pv4"></li></ul>
+    <p class="hint" data-t="pv5"></p>
   </section>
 
   <section>
@@ -242,6 +251,7 @@
 <script>
 const T = {
   fr: {
+    pvTitle: "Tes données", pv1: "Rien n'est enregistré ni suivi : pas de compte, pas de statistiques, pas de témoins.", pv2: "Ce que tu entres sert seulement à créer ton code de configuration. Il quitte ton téléphone seulement quand tu l'envoies toi-même.", pv3: "Ta ville est arrondie à environ 100 m et sert uniquement à lire la météo.", pv4: "Ton code est gardé comme secret chiffré. Ni ton nom, ni ta ville, ni ton code n'apparaissent dans les journaux du service.", pv5: "La recherche de ville passe par Open-Meteo. Les boutons Tester envoient un message test directement à Notify Me ou Voice Monkey.",
     title: "Ouvre les fenêtres",
     lead: "Configuration en 5 minutes, sur ton téléphone.",
     toGoogle: "Pas d'Echo? Ton téléphone peut faire la job →",
@@ -323,6 +333,7 @@ const T = {
     ],
   },
   en: {
+    pvTitle: "Your data", pv1: "Nothing is logged or tracked: no account, no analytics, no cookies.", pv2: "What you type is only used to make your setup code. It leaves your phone only when you send it yourself.", pv3: "Your town is rounded to about 100 m and only used to read the weather.", pv4: "Your code is kept as an encrypted secret. Your name, town and code never show up in the service's logs.", pv5: "Town search goes through Open-Meteo. The Test buttons send a test message straight to Notify Me or Voice Monkey.",
     title: "Open the windows",
     lead: "5-minute setup, on your phone.",
     toGoogle: "No Echo? Your phone can do the job →",
