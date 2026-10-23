@@ -2,6 +2,7 @@ import random
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
+import alert
 from alert import close_reason, evaluate, in_alert_window, is_optimal, next_state
 from flair import CLOSE_LINES, WEATHER_LINES, build_message, holiday_for, weather_kind
 
@@ -139,3 +140,22 @@ def test_titles_match_weather_and_temp():
             assert deg in t and t.replace(deg, "{deg}") in allowed
     assert "19 degrees" in build_message(d, GOOD, spoken=True)[0]
     assert build_message(date(2026, 10, 30), GOOD)[0].endswith(", 19°")  # holiday title
+
+def test_announce_shows_text_on_screen(monkeypatch):
+    sent = {}
+
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+    def fake_post(url, timeout, json):
+        sent.update(json)
+        return Resp()
+
+    monkeypatch.setenv("VOICEMONKEY_TOKEN", "t")
+    monkeypatch.setenv("VOICEMONKEY_DEVICE", "d")
+    monkeypatch.setattr(alert.requests, "post", fake_post)
+    alert._announce("Open up", "19 degrees outside")
+    assert sent["speech"] == "Open up. 19 degrees outside"
+    assert sent["text_display"] == "Open up\n19 degrees outside"
+    assert sent["display_seconds"] == alert.CONFIG["display_seconds"]
