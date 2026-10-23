@@ -2,7 +2,7 @@
 
 ## LATEST (2026-10-22, main @ b029aeb)
 Friends-and-family release is live.
-- Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs, `docs/index.html`).
+- Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs). Root `docs/index.html` = chooser (2026-10-23) -> `echo.html` (Echo setup, was index.html) or `google.html`.
   FR first + EN toggle. Steps: name, town search (Open-Meteo geocoding, manual lat/lon fallback),
   Notify Me 7-step drawn tap-by-tap guide, optional Voice Monkey 12-step guide (from voicemonkey.io v3 docs),
   Paste buttons, then "Créer mon code" makes a message: secret name `HOME_<NAME>` + JSON value.
@@ -19,7 +19,7 @@ Friends-and-family release is live.
 ## UPDATE (2026-10-23): Google Home / Android homes = phone push via ntfy
 - Why not the Nest speaker: Assistant SDK "broadcast" only works from the same home network (not GitHub cloud);
   Google has no Voice Monkey equivalent; routines can't read a URL or play an MP3 link. Owner chose simple, no Pi.
-- New page `docs/google.html` (FR first, EN toggle), linked from index.html. Name, town, 5-step drawn ntfy guide,
+- New page `docs/google.html` (FR first, EN toggle), linked from the chooser and echo.html. Name, town, 5-step drawn ntfy guide,
   "Subscribe in ntfy" = `ntfy://ntfy.sh/<topic>` deep link (Android), iPhone: copy topic + App Store link,
   Test button POSTs to ntfy.sh. Topic `fenetres-<16 random>` kept in localStorage so reloads keep it.
 - Secret `GHOME_<NAME>` = `{"n","p","l","z"?,"g": topic}`. `alert.py _google_home()`: id `g-<name>`, mode `push`,
@@ -69,7 +69,7 @@ Notify Me guide = 7 steps (step 6: say "Alexa, open Notify Me" to the Echo, then
 ## Project
 Window-open alert for Sainte-Anne-des-Plaines QC (lat 45.76, lon -73.82). GitHub Actions cron every 15 min
 (`.github/workflows/window-alert.yml`): pytest, then `python alert.py`, then commit state.json.
-Files: alert.py (rules, homes, sending), flair.py (titles/jokes, weather lines, holidays), test_alert.py, docs/index.html.
+Files: alert.py (rules, homes, sending), flair.py (titles/jokes, weather lines, holidays), test_alert.py, docs/ (index chooser, echo.html, google.html).
 Echo: Voice Monkey v3 Speaker "Echo", device echo-mpzmw, Echo Show (Amazon.ca); routine made in phone app.
 Secrets: NOTIFYME_ACCESS_CODE, VOICEMONKEY_TOKEN, VOICEMONKEY_DEVICE, HOME_*. Vars: MODE, VOICEMONKEY_CHIME.
 
