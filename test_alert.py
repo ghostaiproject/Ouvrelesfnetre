@@ -403,3 +403,50 @@ def test_location_comes_from_secrets(monkeypatch):
     assert alert._coord("MAIN_LAT") == 45.5
     assert alert._coord("MAIN_LON") is None
     assert alert._coord("NOPE_NOT_SET") is None
+
+
+# ------------------------------------------------ locked homes (homes.txt) ---
+def _keys():
+    from cryptography.hazmat.primitives import serialization as s
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem = k.private_bytes(s.Encoding.PEM, s.PrivateFormat.PKCS8, s.NoEncryption()).decode()
+    return k.public_key(), pem
+
+
+def test_locked_homes_unlock_and_load(tmp_path, monkeypatch):
+    import lock
+    pub, pem = _keys()
+    f = tmp_path / "homes.txt"
+    f.write_text("# comment\n"
+                 + lock.lock({"k": "MAIN", "p": [45.5, -73.57]}, pub) + "  # main\n"
+                 + lock.lock({"k": "HOME", "n": "Chalet", "p": [46.81, -71.21], "l": "fr", "c": "abc"}, pub) + "\n"
+                 + lock.lock({"k": "PHONE", "n": "Condo", "p": [46.81, -71.21], "g": "fenetres-x1"}, pub) + "\n"
+                 + "olf1:garbage\n")
+    monkeypatch.setattr(alert, "HOMES_FILE", f)
+    monkeypatch.setitem(alert.CONFIG, "lat", None)
+    monkeypatch.setitem(alert.CONFIG, "lon", None)
+    homes = {h["name"].lower(): h for h in alert.load_homes({"HOMES_KEY": pem.replace("\n", "\\n")})}
+    assert (homes["main"]["lat"], homes["main"]["lon"]) == (45.5, -73.57)
+    assert homes["chalet"]["notifyme"] == "abc" and homes["chalet"]["lang"] == "fr"
+    assert homes["condo"]["mode"] == "push" and homes["condo"]["ntfy"] == "fenetres-x1"
+    assert len(homes) == 3   # garbage line skipped, others kept
+
+
+def test_locked_homes_ignored_without_key(tmp_path, monkeypatch):
+    import lock
+    pub, _ = _keys()
+    f = tmp_path / "homes.txt"
+    f.write_text(lock.lock({"k": "HOME", "n": "Chalet", "p": [1, 2], "c": "x"}, pub) + "\n")
+    monkeypatch.setattr(alert, "HOMES_FILE", f)
+    assert [h["id"] for h in alert.load_homes({})] == ["main"]
+
+
+def test_locked_code_never_printed(tmp_path, monkeypatch, capsys):
+    _, pem = _keys()
+    f = tmp_path / "homes.txt"
+    f.write_text("olf1:SECRETSTUFF\n")
+    monkeypatch.setattr(alert, "HOMES_FILE", f)
+    alert.load_homes({"HOMES_KEY": pem})
+    out = capsys.readouterr()
+    assert "SECRETSTUFF" not in out.err + out.out and "line 1" in out.err

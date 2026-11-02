@@ -78,7 +78,7 @@ Notify Me guide = 7 steps (step 6: say "Alexa, open Notify Me" to the Echo, then
 - Alert texts are English only (flair.py).
 
 ## Project
-Window-open alert for the user's home (location in secrets MAIN_LAT / MAIN_LON, never in the repo). GitHub Actions cron every 15 min
+Window-open alert for the user's home (every location, incl. main, is a locked code in homes.txt; opened by secret HOMES_KEY; docs/lock.js locks, alert.py _unlock opens, lock.py locks by hand). GitHub Actions cron every 15 min
 (`.github/workflows/window-alert.yml`): pytest, then `python alert.py`, then commit state.json.
 Files: alert.py (rules, homes, sending), flair.py (titles/jokes, weather lines, holidays), test_alert.py, docs/ (index chooser, echo.html, phone.html).
 Echo: Voice Monkey v3 Speaker "Echo", device echo-mpzmw, Echo Show (Amazon.ca); routine made in phone app.

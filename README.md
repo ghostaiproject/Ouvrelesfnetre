@@ -1,7 +1,7 @@
 # Ouvrelesfnetre
 
 Pings an Amazon Echo when it's a good night to open the windows
-(your home, set by the MAIN_LAT / MAIN_LON secrets). Runs free on GitHub Actions every 15 min.
+(every home's location is locked in `homes.txt`). Runs free on GitHub Actions every 15 min.
 
 ## Rule
 Opens (max ONE alert per day), when all true:
@@ -19,6 +19,7 @@ MODE (repo variable): `auto` (default: silent ping, plus spoken when optimal or 
 
 ## Setup (phone friendly)
 1. Repo > Settings > Secrets and variables > Actions > New secret:
+   - `HOMES_KEY`: the private key that unlocks `homes.txt` (set once; keep a backup, losing it = re-add every home)
    - Silent mode: `NOTIFYME_ACCESS_CODE` (Alexa app: enable the "Notify Me" skill, code arrives by email)
    - Spoken mode: `VOICEMONKEY_TOKEN` and `VOICEMONKEY_DEVICE` (voicemonkey.io: account, add a Speaker device, copy token and device ID)
 2. Optional: Variables tab > `MODE` = `announce` to make it spoken. Default is `notify_me`.
@@ -30,11 +31,11 @@ This repo checks every home with its own local weather; other homes never touch 
 1. Send them the setup page: `https://ghostaiproject.github.io/Ouvrelesfnetre/` (main page `docs/index.html` explains the project and groups both options: Echo -> `docs/echo.html`, no Echo -> `docs/phone.html`;
    turn on once at Settings > Pages > Deploy from branch `main`, folder `/docs`).
    French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
-   and paste its code. The page gives them a message to send back to you.
-2. Their message has a secret name (like `HOME_CHALET`) and a value. Repo > Settings > Secrets and
-   variables > Actions > New repository secret: paste the name, paste the value.
+   and paste its code. The page gives them a locked code (`olf1:...`) to send back to you.
+2. Add it as one new line in `homes.txt` (or hand it to Claude to add). No secret needed: only
+   `HOMES_KEY` can open it, so the file is safe in public. Old `HOME_` secrets still work.
 3. Test it: Actions > window-alert > Run workflow, type their name (`chalet`) in the home box. `all` tests every home.
-- To remove a home, delete its secret. A broken code is skipped (see the run log), the other homes keep working.
+- To remove a home, delete its line in `homes.txt` (or its old secret). A broken code is skipped (see the run log), the other homes keep working.
 - Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
 
 ## No Echo? Phone homes (separate setup)
@@ -42,8 +43,8 @@ For anyone without an Echo (a crutch, any Android or iPhone): every alert (open 
 phone push through the free ntfy app, joke included. Optional: MacroDroid reads it out loud. Nothing at home.
 1. Send them the main link; they tap "No Echo? Your phone" (or send `.../Ouvrelesfnetre/phone.html` directly).
    They type a name, pick their town, install ntfy, tap "Subscribe in ntfy", tap Test, then send you the message.
-2. Their message has a secret name like `PHONE_CHALET`, never mixed with Echo `HOME_` secrets.
-   Add it the same way: Settings > Secrets and variables > Actions > New repository secret.
+2. Their message has a locked code: add it as a line in `homes.txt`, same as Echo homes.
+   Old `PHONE_` secrets still work.
 3. Test: Actions > window-alert > Run workflow, home = `chalet` (or `p-chalet`).
 - Same rules, times and jokes as Echo homes, in their own language and time zone, worded for speech ("19 degrees").
 - The ntfy topic in their code is the only key to their alerts: keep it private (it's masked in logs).
@@ -51,7 +52,7 @@ phone push through the free ntfy app, joke included. Optional: MacroDroid reads 
 
 ## Notes
 - Privacy: the repo and its logs are public, so every home except yours ("main") shows up only as a
-  private hashed id (from its secret) in state.json and logs. No names, towns or codes are ever printed.
+  private hashed id (from its code) in state.json and logs. Locations are masked in logs too. No names, towns or codes are ever printed.
 - Cron can run a few minutes late. Normal.
 - `state.json` is committed back about once a day, which also keeps the schedule from auto-disabling after 60 days idle.
 - Silent mode: Echo ring glows yellow; ask "Alexa, what are my notifications?"
@@ -60,3 +61,9 @@ phone push through the free ntfy app, joke included. Optional: MacroDroid reads 
 `flair.py` picks a themed title and joke (Halloween, Christmas, Saint-Jean, Canada Day, etc.), otherwise one matching the weather: breezy (wind 20 km/h+), cool (under 18 C), mild (18 to 20 C) or warm (over 20 C). Every open title includes the current temp, e.g. "Goldilocks 19°". Edit the lists in `flair.py` to add your own.
 - Silent mode: only the title shows on the Echo itself; the full joke and numbers are read out when you ask for notifications.
 - Custom sound: Notify Me always uses Amazon's default sound. In spoken mode (`announce`), set repo variable `VOICEMONKEY_CHIME` to a sound from Voice Monkey's sound picker.
+
+## Locked homes (`homes.txt`)
+- Setup pages lock each code in the browser with the public key in `docs/lock.js`
+  (RSA-OAEP + AES-GCM). The workflow opens them with the `HOMES_KEY` secret.
+- The first line, marked `main`, is your own home's location.
+- To lock one by hand: `python lock.py '{"k": "HOME", "n": "Chalet", "p": [46.81, -71.21], "c": "..."}'`

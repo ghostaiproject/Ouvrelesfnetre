@@ -223,6 +223,7 @@
   </section>
 </main>
 
+<script src="lock.js"></script>
 <script>
 const T = {
   fr: {
@@ -279,7 +280,7 @@ const T = {
     sendShare: "Appuie sur « Envoyer », choisis Messages (ou Messenger, courriel…), choisis la personne, puis envoie.",
     sendCopy: "Appuie sur « Copier », ouvre tes textos ou tes courriels, appuie longtemps dans la zone de texte → Coller, puis envoie.",
     langNote: "🇫🇷 Tes alertes et blagues seront en français. Pour l'anglais, appuie sur « English » en haut : le code se met à jour tout seul.",
-    after: "Garde ce code pour toi : il contient l'adresse de tes alertes.",
+    after: "Ce code est verrouillé : seul le système d'alertes peut l'ouvrir. Ta ville et ton adresse d'alertes restent cachées.",
     errName: "Écris un nom (étape 1).", errTown: "Choisis ta ville dans la liste (étape 2).",
     errSearch: "Aucune ville trouvée. Vérifie l'orthographe ou utilise « Ta ville n'apparaît pas? ».",
     errNet: "La recherche ne marche pas en ce moment. Utilise « Ta ville n'apparaît pas? ».",
@@ -342,7 +343,7 @@ const T = {
     sendShare: "Tap \"Send\", pick Messages (or Messenger, email…), pick the person, then send.",
     sendCopy: "Tap \"Copy\", open your texts or email, long-press in the message box → Paste, then send.",
     langNote: "🇬🇧 Your alerts and jokes will be in English. For French, tap \"Français\" at the top: the code updates by itself.",
-    after: "Keep this code private: it holds the address of your alerts.",
+    after: "This code is locked: only the alert system can open it. Your town and alert address stay hidden.",
     errName: "Type a name (step 1).", errTown: "Pick your town in the list (step 2).",
     errSearch: "No town found. Check the spelling or use \"Can't find your town?\".",
     errNet: "Search isn't working right now. Use \"Can't find your town?\".",
@@ -479,7 +480,8 @@ function where() {
   return place;
 }
 
-function build() {
+let buildN = 0;
+async function build() {
   const t = T[lang], name = $("name").value.trim(), id = slug(name), p = where();
   const err = !id ? t.errName : !p ? t.errTown : "";
   $("makeErr").textContent = err;
@@ -488,13 +490,17 @@ function build() {
   const r3 = (x) => Math.round(x * 1000) / 1000;
   const home = { n: name, p: [r3(p.lat), r3(p.lon)], l: lang, g: topic };
   if (p.tz && p.tz !== "America/Toronto") home.z = p.tz;
-  message = t.msgHead + "\n" + t.secretName + ": PHONE_" + id + "\n" + t.value + ":\n" + JSON.stringify(home);
+  // Locked in this browser with the public key (docs/lock.js): only the owner's
+  // GitHub workflow can open it, so it can go in the public homes.txt file.
+  const n = ++buildN, locked = await olfLock({ k: "PHONE", ...home });
+  if (n !== buildN) return;  // a newer build (language switch) already ran
+  message = t.msgHead + "\n" + locked;
   $("out").textContent = message;
   $("share").style.display = navigator.share ? "" : "none";
   $("sendHow").textContent = navigator.share ? t.sendShare : t.sendCopy;
   $("result").style.display = "block";
 }
-$("make").onclick = () => { build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
+$("make").onclick = async () => { await build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
 
 async function copyText(text, fallbackEl) {
   try { await navigator.clipboard.writeText(text); }

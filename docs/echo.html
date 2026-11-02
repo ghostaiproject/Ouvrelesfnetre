@@ -243,6 +243,7 @@
   </section>
 </main>
 
+<script src="lock.js"></script>
 <script>
 const T = {
   fr: {
@@ -290,7 +291,7 @@ const T = {
     sendShare: "Appuie sur « Envoyer », choisis Messages (ou Messenger, courriel…), choisis la personne, puis envoie.",
     sendCopy: "Appuie sur « Copier », ouvre tes textos ou tes courriels, appuie longtemps dans la zone de texte → Coller, puis envoie.",
     langNote: "🇫🇷 Tes alertes, blagues et messages parlés seront en français. Pour l'anglais, appuie sur « English » en haut : le code se met à jour tout seul.",
-    after: "Garde ce code pour toi : il permet d'envoyer des notifications à ton Echo.",
+    after: "Ce code est verrouillé : seul le système d'alertes peut l'ouvrir. Ta ville et tes codes restent cachés.",
     errName: "Écris un nom (étape 1).", errTown: "Choisis ta ville dans la liste (étape 2).",
     errCode: "Colle ton code Notify Me (étape 3), ou remplis Voice Monkey.",
     errSearch: "Aucune ville trouvée. Vérifie l'orthographe ou utilise « Ta ville n'apparaît pas? ».",
@@ -371,7 +372,7 @@ const T = {
     sendShare: "Tap \"Send\", pick Messages (or Messenger, email…), pick the person, then send.",
     sendCopy: "Tap \"Copy\", open your texts or email, long-press in the message box → Paste, then send.",
     langNote: "🇬🇧 Your alerts, jokes and spoken messages will be in English. For French, tap \"Français\" at the top: the code updates by itself.",
-    after: "Keep this code private: it lets anyone send notifications to your Echo.",
+    after: "This code is locked: only the alert system can open it. Your town and codes stay hidden.",
     errName: "Type a name (step 1).", errTown: "Pick your town in the list (step 2).",
     errCode: "Paste your Notify Me code (step 3), or fill in Voice Monkey.",
     errSearch: "No town found. Check the spelling or use \"Can't find your town?\".",
@@ -547,7 +548,8 @@ function where() {
   return place;
 }
 
-function build() {
+let buildN = 0;
+async function build() {
   const t = T[lang], name = $("name").value.trim(), id = slug(name), p = where();
   const code = $("code").value.trim(), vt = $("vmToken").value.trim(), vd = $("vmDevice").value.trim();
   const err = !id ? t.errName : !p ? t.errTown : !(code || (vt && vd)) ? t.errCode : "";
@@ -561,13 +563,17 @@ function build() {
   if (p.tz && p.tz !== "America/Toronto") home.z = p.tz;
   if (code) home.c = code;
   if (vt && vd) { home.t = vt; home.d = vd; }
-  message = t.msgHead + "\n" + t.secretName + ": HOME_" + id + "\n" + t.value + ":\n" + JSON.stringify(home);
+  // Locked in this browser with the public key (docs/lock.js): only the owner's
+  // GitHub workflow can open it, so it can go in the public homes.txt file.
+  const n = ++buildN, locked = await olfLock({ k: "HOME", ...home });
+  if (n !== buildN) return;  // a newer build (language switch) already ran
+  message = t.msgHead + "\n" + locked;
   $("out").textContent = message;
   $("share").style.display = navigator.share ? "" : "none";
   $("sendHow").textContent = navigator.share ? t.sendShare : t.sendCopy;
   $("result").style.display = "block";
 }
-$("make").onclick = () => { build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
+$("make").onclick = async () => { await build(); if (message) $("result").scrollIntoView({ behavior: "smooth" }); };
 
 $("copy").onclick = async () => {
   try { await navigator.clipboard.writeText(message); }

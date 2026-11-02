@@ -201,6 +201,53 @@ def aliases(key: str, name: str) -> set:
     return {short, str(name).lower(), "p-" + short}
 
 
+HOMES_FILE = Path(__file__).with_name("homes.txt")
+
+
+def _unlock(code: str, pem: str) -> dict:
+    """Open one locked code from homes.txt (made by docs/lock.js or lock.py)."""
+    import base64
+
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    if not code.startswith("olf1:"):
+        raise ValueError("not a locked code")
+    b = code[5:]
+    blob = base64.urlsafe_b64decode(b + "=" * (-len(b) % 4))
+    key = serialization.load_pem_private_key(pem.encode(), password=None)
+    n = key.key_size // 8
+    oaep = padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+    aes = key.decrypt(blob[:n], oaep)
+    return json.loads(AESGCM(aes).decrypt(blob[n:n + 12], blob[n + 12:], None))
+
+
+def load_locked(env=os.environ, path=None) -> tuple:
+    """homes.txt -> (main location or None, {"HOME_x"/"PHONE_x": json}) using
+    the HOMES_KEY secret. One code per line; # starts a comment."""
+    path = path or HOMES_FILE
+    pem = (env.get("HOMES_KEY") or "").replace("\\n", "\n")
+    if not pem or not path.exists():
+        return None, {}
+    main, found = None, {}
+    for i, line in enumerate(path.read_text().splitlines(), 1):
+        code = line.split("#", 1)[0].strip()
+        if not code:
+            continue
+        try:
+            h = _unlock(code, pem)
+            kind = str(h.pop("k", "HOME")).upper()
+            if kind == "MAIN":
+                main = (float(h["p"][0]), float(h["p"][1]))
+                continue
+            if kind not in ("HOME", "PHONE"):
+                raise ValueError("bad kind")
+            found[f"{kind}_L{i}"] = json.dumps(h)
+        except Exception:  # noqa: BLE001  (never print the code or what's inside)
+            print(f"ERROR homes.txt line {i}: can't unlock this code, skipped.", file=sys.stderr)
+    return main, found
+
+
 def load_homes(env=os.environ) -> list:
     """Your own home ("main", from the usual secrets) plus one home per
     HOME_<NAME> secret. Each HOME_ secret holds the code from setup.html.
@@ -223,6 +270,10 @@ def load_homes(env=os.environ) -> list:
         secrets = json.loads(env.get("ALL_SECRETS") or "{}")
     except ValueError:
         secrets = {}
+    main, locked = load_locked(env)
+    if main and homes[0]["lat"] is None:
+        homes[0]["lat"], homes[0]["lon"] = main
+    secrets.update(locked)
     for key in sorted(secrets):
         if key.startswith(("PHONE_", "GHOME_")):   # GHOME_ = first name of PHONE_, still read
             home = _phone_home(key, secrets[key])
@@ -365,8 +416,8 @@ def mask_secrets(homes):
             if os.environ.get(k):
                 print(f"::add-mask::{os.environ[k]}")
         for h in homes:
-            for k in ("notifyme", "vm_token", "vm_device", "ntfy"):
-                if h.get(k):
+            for k in ("notifyme", "vm_token", "vm_device", "ntfy", "lat", "lon"):
+                if h.get(k) not in (None, ""):
                     print(f"::add-mask::{h[k]}")
 
 
@@ -424,8 +475,8 @@ def main() -> int:
     failed = 0
     for home in homes:
         if home.get("lat") is None or home.get("lon") is None:
-            print(f"::warning::[{home['id']}] no location set (add MAIN_LAT and MAIN_LON "
-                  "secrets). Skipped, nothing sent.")
+            print(f"::warning::[{home['id']}] no location set (MAIN line in homes.txt + "
+                  "HOMES_KEY secret). Skipped, nothing sent.")
             continue
         before = state["homes"].get(home["id"], BLANK)
         try:

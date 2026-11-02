@@ -1,0 +1,4 @@
+# Locked homes. Each line is one code from the setup page (docs/echo.html or
+# docs/phone.html). Only the HOMES_KEY secret can open them, so this file can
+# be public. Add a line to add a home, delete it to remove one. # = comment.
+olf1:TEwPKcIMbnQV5uYp31aB2pGc3h0JMhK71Hajua09XV7ZosEqNNO4ibZlfSa5i0JzvWoptj0kIEJ_UYPgWMlV6txZ84XFJrMXdtLHm-2TfuvtggHZbWAtHpzuB5X0lnYjkt4am6OLcfvVLSxr-SS0qz2jIkrj7TyFAYFwIec0ILkqpV_TPSo8tSxigpy1hwEjHbaVHkNwTJkqXbgU-3jU9SN9zCHJHgFK3FpTHC2vZ4E7TK2E0ZEtmuFObXW-xDPNi6ABNKmch1C9PnO0MwySncgUDO8Cmv1iGEuClK9ME4Y19Moef1ZocZ2EQkn_FRF_z3ZZaIE06oUMvb7DA_SgS1LpuUn4atukCcOhRX3t3qZgsFr3BKxBSmNnBmR-Uv7LCeHCHjI3KgbAo7kYCVP-Bcw5wmnmO2j2Pd46kafnnw  # main (your home's location)
