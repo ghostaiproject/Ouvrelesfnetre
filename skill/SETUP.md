@@ -55,7 +55,9 @@ One-time setup, about 15 minutes, free. Use the **same Amazon account** as the E
 ## C. Paste the code
 
 9. Top tab **Code**. Open `lambda_function.py`, select all, paste
-   `skill/lambda/lambda_function.py`.
+   `skill/lambda/lambda_function.py`. Then find the line `HOME = None`
+   and type your home instead, e.g. `HOME = (45.50, -73.57)`. Only
+   here in the console, never on GitHub.
 10. Same for `requirements.txt`.
 11. **New File** (top left icon) → `lambda/alert.py` → paste. Again for
     `lambda/flair.py`.

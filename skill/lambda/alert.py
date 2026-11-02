@@ -23,9 +23,18 @@ import requests
 from flair import REASONS, build_message, norm_lang
 
 # ---------------------------------------------------------------- CONFIG ---
+def _coord(name):
+    """Your home's location, kept out of this public repo: GitHub secrets
+    MAIN_LAT and MAIN_LON (e.g. 45.50 and -73.57). None when not set."""
+    try:
+        return float(os.environ[name])
+    except (KeyError, ValueError):
+        return None
+
+
 CONFIG = {
-    "lat": 0.0,
-    "lon": 0.0,
+    "lat": _coord("MAIN_LAT"),
+    "lon": _coord("MAIN_LON"),
     "tz": "America/Toronto",
     # When an "open the windows" alert may fire (max ONE per day):
     "weekday_slots": [dtime(12, 0), dtime(17, 0)],  # Mon-Fri, noon and 5pm
@@ -352,6 +361,9 @@ def _why(e) -> str:
 def mask_secrets(homes):
     """Hide every code in GitHub's public logs (a HOME_ secret is masked only as a whole)."""
     if os.environ.get("GITHUB_ACTIONS") == "true":
+        for k in ("MAIN_LAT", "MAIN_LON"):
+            if os.environ.get(k):
+                print(f"::add-mask::{os.environ[k]}")
         for h in homes:
             for k in ("notifyme", "vm_token", "vm_device", "ntfy"):
                 if h.get(k):
@@ -411,6 +423,10 @@ def main() -> int:
     new = {"heartbeat": state["heartbeat"], "homes": dict(state["homes"])}
     failed = 0
     for home in homes:
+        if home.get("lat") is None or home.get("lon") is None:
+            print(f"::warning::[{home['id']}] no location set (add MAIN_LAT and MAIN_LON "
+                  "secrets). Skipped, nothing sent.")
+            continue
         before = state["homes"].get(home["id"], BLANK)
         try:
             new["homes"][home["id"]] = run_home(home, before, dry, force)

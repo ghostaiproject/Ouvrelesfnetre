@@ -15,6 +15,12 @@ except ImportError:  # older Alexa-hosted runtimes
 import alert  # noqa: E402
 from flair import REASONS, norm_lang  # noqa: E402
 
+# Your home's (lat, lon). Type it ONLY in the Alexa console copy, never in
+# GitHub (public repo). Example: HOME = (45.50, -73.57)
+HOME = None
+if HOME:
+    alert.CONFIG["lat"], alert.CONFIG["lon"] = HOME
+
 CARD = {"en": "Open the windows?", "fr": "J'ouvre les fenêtres?"}
 
 

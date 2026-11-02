@@ -33,6 +33,8 @@ jobs:
           VOICEMONKEY_CHIME: ${{ vars.VOICEMONKEY_CHIME }}
           DRY_RUN: "0"
           FORCE_TEST: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
+          MAIN_LAT: ${{ secrets.MAIN_LAT }}   # your home's location, kept private
+          MAIN_LON: ${{ secrets.MAIN_LON }}
           VOICEMONKEY_TOKEN: ${{ secrets.VOICEMONKEY_TOKEN }}
           VOICEMONKEY_DEVICE: ${{ secrets.VOICEMONKEY_DEVICE }}
           NOTIFYME_ACCESS_CODE: ${{ secrets.NOTIFYME_ACCESS_CODE }}

@@ -1,7 +1,7 @@
 # Ouvrelesfnetre
 
 Pings an Amazon Echo when it's a good night to open the windows
-(your home). Runs free on GitHub Actions every 15 min.
+(your home, set by the MAIN_LAT / MAIN_LON secrets). Runs free on GitHub Actions every 15 min.
 
 ## Rule
 Opens (max ONE alert per day), when all true:

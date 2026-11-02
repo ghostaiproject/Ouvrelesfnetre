@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 
 import alert
 from alert import close_reason, evaluate, in_alert_window, is_optimal, next_state
+import pytest
+
 from flair import CLOSE_LINES, LINES, WEATHER_LINES, build_message, holiday_for, weather_kind
 
 TZ = ZoneInfo("America/Toronto")
@@ -14,6 +16,13 @@ GOOD = {"temp": 19, "humidity": 50, "dew_point": 8, "precip": 0, "wind": 10,
 
 def at(h, m=0, day=22):  # Oct 22 2026 = Thursday, Oct 24 = Saturday
     return datetime(2026, 10, day, h, m, tzinfo=TZ)
+
+
+@pytest.fixture(autouse=True)
+def _test_home_location(monkeypatch):
+    """The real location lives in GitHub secrets; tests use a generic spot."""
+    monkeypatch.setitem(alert.CONFIG, "lat", 45.50)
+    monkeypatch.setitem(alert.CONFIG, "lon", -73.57)
 
 
 def test_good_moment_passes():
@@ -374,3 +383,23 @@ def test_names_and_towns_never_reach_public_logs(tmp_path, monkeypatch, capsys):
     logs = out.out + out.err + (tmp_path / "state.json").read_text()
     for private in ("Chalet", "chalet", "CHALET", "Secretville", "46.81", "-71.21", "fenetres-abc123"):
         assert private not in logs
+
+
+def test_main_without_location_is_skipped_not_failed(tmp_path, monkeypatch, capsys):
+    monkeypatch.setitem(alert.CONFIG, "lat", None)
+    monkeypatch.setitem(alert.CONFIG, "lon", None)
+    monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.delenv("ALL_SECRETS", raising=False)
+    monkeypatch.delenv("FORCE_TEST", raising=False)
+    monkeypatch.delenv("DRY_RUN", raising=False)
+    monkeypatch.setattr(alert, "run_home", lambda *a: pytest.fail("must not run"))
+    assert alert.main() == 0
+    assert "no location set" in capsys.readouterr().out
+
+
+def test_location_comes_from_secrets(monkeypatch):
+    monkeypatch.setenv("MAIN_LAT", "45.5")
+    monkeypatch.setenv("MAIN_LON", "bad")
+    assert alert._coord("MAIN_LAT") == 45.5
+    assert alert._coord("MAIN_LON") is None
+    assert alert._coord("NOPE_NOT_SET") is None
