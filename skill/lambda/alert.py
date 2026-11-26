@@ -36,10 +36,13 @@ CONFIG = {
     "lat": _coord("MAIN_LAT"),
     "lon": _coord("MAIN_LON"),
     "tz": "America/Toronto",
+    # Quiet hours: outside this window the script does nothing at all (FORCE_TEST still works)
+    "awake_from": dtime(10, 0),
+    "awake_until": dtime(20, 0),
     # When an "open the windows" alert may fire (max ONE per day):
     "weekday_slots": [dtime(12, 0), dtime(17, 0)],  # Mon-Fri, noon and 5pm
     "slot_minutes": 30,            # each slot stays open this long (covers cron delays)
-    "weekend_start": dtime(8, 0),  # Sat/Sun: any time in this window
+    "weekend_start": dtime(10, 0), # Sat/Sun: any time in this window
     "weekend_end": dtime(20, 0),
     # Conditions to open:
     "temp_min": 15.0,              # C, inclusive
@@ -52,8 +55,8 @@ CONFIG = {
     # "Close the windows" reminder:
     "cold_close": 13.0,            # close if now or within ~2h it drops below this (C)
     "rain_prob_close": 50,         # close if rain chance in next ~2h reaches this (%)
-    "close_from": dtime(7, 0),     # only send close reminders inside these hours
-    "close_until": dtime(23, 0),
+    "close_from": dtime(10, 0),    # only send close reminders inside these hours
+    "close_until": dtime(20, 0),
     "mode_default": "auto",        # auto = silent ping always, spoken too if optimal
     "indoor_margin": 2.0,          # FUTURE HOOK: outside must be this much cooler than inside
     "chime": "",                   # spoken mode: sound before speech (or VOICEMONKEY_CHIME)
@@ -457,9 +460,20 @@ def run_home(home: dict, state: dict, dry: bool, force: bool) -> dict:
     return new
 
 
+def _now(cfg=CONFIG) -> datetime:
+    return datetime.now(ZoneInfo(cfg["tz"]))
+
+
+def is_awake(now: datetime, cfg=CONFIG) -> bool:
+    return cfg["awake_from"] <= now.time() < cfg["awake_until"]
+
+
 def main() -> int:
     dry = os.environ.get("DRY_RUN") == "1"
     force = os.environ.get("FORCE_TEST") == "1"
+    if not force and not is_awake(_now()):
+        print(f"Quiet hours ({CONFIG['awake_from']:%H:%M}-{CONFIG['awake_until']:%H:%M}): nothing to do.")
+        return 0
     test_home = (os.environ.get("TEST_HOME") or "main").lower()
     homes = load_homes()
     mask_secrets(homes)
@@ -481,6 +495,9 @@ def main() -> int:
         before = state["homes"].get(home["id"], BLANK)
         try:
             new["homes"][home["id"]] = run_home(home, before, dry, force)
+        except (requests.RequestException, RuntimeError) as e:
+            # weather or delivery service down: try again next run, don't fail the job
+            print(f"::warning::[{home['id']}] {_why(e)}. No alert sent, retry next run.")
         except Exception as e:  # noqa: BLE001  one broken home must not stop the others
             failed += 1
             print(f"ERROR [{home['id']}] {_why(e)}. No alert sent.", file=sys.stderr)
@@ -489,7 +506,7 @@ def main() -> int:
         print("DRY_RUN: nothing sent, state not saved.")
         return 1 if failed else 0
 
-    today = datetime.now(ZoneInfo(CONFIG["tz"])).strftime("%Y-%m-%d")
+    today = _now().strftime("%Y-%m-%d")
     if today != new["heartbeat"]:
         new["heartbeat"] = today  # one commit/day keeps the cron from auto-disabling
     if new != state:

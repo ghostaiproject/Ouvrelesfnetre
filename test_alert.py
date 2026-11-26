@@ -23,6 +23,10 @@ def _test_home_location(monkeypatch):
     """The real location lives in GitHub secrets; tests use a generic spot."""
     monkeypatch.setitem(alert.CONFIG, "lat", 45.50)
     monkeypatch.setitem(alert.CONFIG, "lon", -73.57)
+    # main() runs at a fixed awake time, so results don't depend on the wall clock
+    monkeypatch.setattr(alert, "_now", lambda cfg=alert.CONFIG: at(12))
+    # CI sets GITHUB_ACTIONS=true; tests must behave the same locally and on the runner
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
 
 def test_good_moment_passes():
@@ -41,9 +45,9 @@ def test_weekday_slots():
 
 
 def test_weekend_window():
-    assert in_alert_window(at(8, 0, day=24))
+    assert in_alert_window(at(10, 0, day=24))
     assert in_alert_window(at(19, 59, day=24))
-    assert not in_alert_window(at(7, 59, day=24))
+    assert not in_alert_window(at(9, 59, day=24))
     assert not in_alert_window(at(20, 0, day=24))
 
 
@@ -225,9 +229,11 @@ def test_one_broken_home_does_not_stop_others(tmp_path, monkeypatch, capsys):
         return {"day": "d", "open": True, "last_alert": "d"}
 
     monkeypatch.setattr(alert, "run_home", fake_run)
-    assert alert.main() == 1
+    assert alert.main() == 0   # a service outage is a warning, not a failed job
     assert seen == ["main", alert.anon_id(OTHER)]
-    assert "SECRET" not in capsys.readouterr().err   # error text is never printed
+    out = capsys.readouterr()
+    assert "::warning::[main] RuntimeError" in out.out
+    assert "SECRET" not in out.out + out.err   # error text is never printed
     saved = json.loads((tmp_path / "state.json").read_text())
     assert saved["homes"][alert.anon_id(OTHER)]["open"] is True     # cottage's state still saved
     assert saved["homes"]["main"] == alert.BLANK     # main left as it was
@@ -383,6 +389,42 @@ def test_names_and_towns_never_reach_public_logs(tmp_path, monkeypatch, capsys):
     logs = out.out + out.err + (tmp_path / "state.json").read_text()
     for private in ("Chalet", "chalet", "CHALET", "Secretville", "46.81", "-71.21", "fenetres-abc123"):
         assert private not in logs
+
+
+def test_ci_masks_codes_and_mask_lines_are_the_only_place_they_appear(tmp_path, monkeypatch, capsys):
+    # GitHub swallows ::add-mask:: lines; every other log line must still be clean
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.setenv("ALL_SECRETS", json.dumps({"PHONE_CHALET": PHONE_CODE}))
+    monkeypatch.delenv("FORCE_TEST", raising=False)
+    monkeypatch.setattr(alert, "fetch_weather", lambda cfg: {**GOOD, "sunny": False})
+    monkeypatch.setattr(alert, "_ntfy", lambda *a: None)
+    alert.main()
+    lines = capsys.readouterr().out.splitlines()
+    assert "::add-mask::46.81" in lines
+    public = "\n".join(l for l in lines if not l.startswith("::add-mask::"))
+    for private in ("Chalet", "46.81", "-71.21", "fenetres-abc123"):
+        assert private not in public
+
+
+def test_quiet_hours_do_nothing_unless_forced(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(alert, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.delenv("ALL_SECRETS", raising=False)
+    monkeypatch.delenv("DRY_RUN", raising=False)
+    monkeypatch.delenv("FORCE_TEST", raising=False)
+    seen = []
+    monkeypatch.setattr(alert, "run_home", lambda h, s, d, f: seen.append(h["id"]) or s)
+    for t in (at(9, 59), at(20, 0), at(23, 30), at(9, 59, day=24)):
+        monkeypatch.setattr(alert, "_now", lambda cfg=alert.CONFIG, t=t: t)
+        assert alert.main() == 0
+    assert seen == [] and not (tmp_path / "state.json").exists()
+    assert "Quiet hours" in capsys.readouterr().out
+    monkeypatch.setattr(alert, "_now", lambda cfg=alert.CONFIG: at(10, 0))
+    assert alert.main() == 0 and seen == ["main"]
+    seen.clear()
+    monkeypatch.setattr(alert, "_now", lambda cfg=alert.CONFIG: at(23, 30))
+    monkeypatch.setenv("FORCE_TEST", "1")
+    assert alert.main() == 0 and seen == ["main"]   # a manual test still goes out at night
 
 
 def test_main_without_location_is_skipped_not_failed(tmp_path, monkeypatch, capsys):
