@@ -1,5 +1,18 @@
 # HANDOFF
 
+## LATEST (2026-11-26, main @ 1042c4f): runs green again, quiet hours
+- Why nothing ran since 10-23: (1) GitHub flagged window-alert.yml "may be malicious" because of
+  `ALL_SECRETS: toJSON(secrets)` -> every run action_required (10-27..11-24). Line removed; old HOME_/PHONE_
+  secrets must be named explicitly (comment in the workflow). (2) Since 11-25 the privacy test failed only in
+  CI (GITHUB_ACTIONS=true -> ::add-mask:: lines held the test coordinate) -> alert step skipped. Tests now clear
+  GITHUB_ACTIONS; a new test covers the CI mask path. Branch rules were never the issue (main unprotected).
+- Quiet hours 10:00-20:00 Toronto (`awake_from/awake_until`, main() returns 0 outside unless FORCE_TEST);
+  weekend_start 10:00; close reminders 10:00-20:00. requests/RuntimeError per home = ::warning::, exit 0.
+- Workflow: cron `7,37 0,14-23 * * *`, pytest only on workflow_dispatch, state push retried 3x then ::warning::.
+- 39 tests pass. Manual run 45767321347 green, state commit pushed by the bot.
+- OPEN: no HOMES_KEY / MAIN_LAT / MAIN_LON secret on the repo -> main home "no location set", nothing is sent.
+  Owner sets HOMES_KEY (never ask for or print it). skill/lambda/alert.py rebuilt -> redeploy in the Alexa console Code tab.
+
 ## LATEST (2026-10-22, main @ b029aeb)
 Multi-home release is live.
 - Setup page: https://ghostaiproject.github.io/Ouvrelesfnetre/ (GitHub Pages, main /docs). Root `docs/index.html` = project explanation + the two options grouped (2026-10-23) -> `echo.html` (Echo setup, was index.html) or `phone.html`.
