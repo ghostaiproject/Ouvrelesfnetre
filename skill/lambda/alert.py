@@ -207,18 +207,42 @@ def aliases(key: str, name: str) -> set:
 HOMES_FILE = Path(__file__).with_name("homes.txt")
 
 
-def _unlock(code: str, pem: str) -> dict:
+def _read_key(raw: str):
+    """HOMES_KEY as pasted into GitHub: tolerate quotes, literal \\n, indents, blank lines, CRLF."""
+    from cryptography.hazmat.primitives import serialization
+    pem = raw.strip().strip("\"'").replace("\\n", "\n")
+    pem = "\n".join(l.strip() for l in pem.splitlines() if l.strip()) + "\n"
+    return serialization.load_pem_private_key(pem.encode(), password=None)
+
+
+def _key_matches_site(key) -> bool | None:
+    """Does HOMES_KEY belong to the public key the setup pages lock with? None = can't tell."""
+    import base64
+    import re
+
+    from cryptography.hazmat.primitives import serialization as s
+    try:
+        js = (HOMES_FILE.parent / "docs" / "lock.js").read_text()
+        der = base64.b64decode(re.search(r'OLF_PUBKEY = "([^"]+)"', js).group(1))
+    except (OSError, AttributeError):
+        return None
+    mine = key.public_key().public_bytes(s.Encoding.DER, s.PublicFormat.SubjectPublicKeyInfo)
+    return mine == der
+
+
+def _unlock(code: str, key) -> dict:
     """Open one locked code from homes.txt (made by docs/lock.js or lock.py)."""
     import base64
 
-    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import padding
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     if not code.startswith("olf1:"):
         raise ValueError("not a locked code")
     b = code[5:]
     blob = base64.urlsafe_b64decode(b + "=" * (-len(b) % 4))
-    key = serialization.load_pem_private_key(pem.encode(), password=None)
+    if isinstance(key, str):
+        key = _read_key(key)
     n = key.key_size // 8
     oaep = padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
     aes = key.decrypt(blob[:n], oaep)
@@ -229,9 +253,18 @@ def load_locked(env=os.environ, path=None) -> tuple:
     """homes.txt -> (main location or None, {"HOME_x"/"PHONE_x": json}) using
     the HOMES_KEY secret. One code per line; # starts a comment."""
     path = path or HOMES_FILE
-    pem = (env.get("HOMES_KEY") or "").replace("\\n", "\n")
-    if not pem or not path.exists():
+    raw = env.get("HOMES_KEY") or ""
+    if not raw.strip() or not path.exists():
         return None, {}
+    try:
+        pem = _read_key(raw)
+    except Exception:  # noqa: BLE001  (never print the key)
+        print("::warning::HOMES_KEY is not a readable private key: paste the whole PEM, "
+              "-----BEGIN PRIVATE KEY----- to -----END PRIVATE KEY-----, no password.")
+        return None, {}
+    if _key_matches_site(pem) is False:
+        print("::warning::HOMES_KEY is a valid key but not the one docs/lock.js locks with, "
+              "so homes.txt lines can't be opened.")
     main, found = None, {}
     for i, line in enumerate(path.read_text().splitlines(), 1):
         code = line.split("#", 1)[0].strip()

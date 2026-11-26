@@ -492,3 +492,21 @@ def test_locked_code_never_printed(tmp_path, monkeypatch, capsys):
     alert.load_homes({"HOMES_KEY": pem})
     out = capsys.readouterr()
     assert "SECRETSTUFF" not in out.err + out.out and "line 1" in out.err
+
+
+def test_homes_key_paste_mistakes_are_tolerated_or_explained(tmp_path, monkeypatch, capsys):
+    import lock
+    pub, pem = _keys()
+    f = tmp_path / "homes.txt"
+    f.write_text(lock.lock({"k": "MAIN", "p": [45.5, -73.57]}, pub) + "\n")
+    monkeypatch.setattr(alert, "HOMES_FILE", f)
+    messy = '"  ' + pem.replace("\n", "\r\n  \n  ") + '  "'   # quotes, CRLF, indents, blank lines
+    assert alert.load_locked({"HOMES_KEY": messy})[0] == (45.5, -73.57)
+    assert alert.load_locked({"HOMES_KEY": "not a key"}) == (None, {})
+    assert "not a readable private key" in capsys.readouterr().out
+    _, other = _keys()   # a real key, but not the site's: the lock.js check names that case
+    monkeypatch.setattr(alert, "_key_matches_site", lambda k: False)
+    alert.load_locked({"HOMES_KEY": other})
+    out = capsys.readouterr()
+    assert "not the one docs/lock.js locks with" in out.out and "line 1" in out.err
+    assert "PRIVATE KEY-----\n" not in out.out + out.err
