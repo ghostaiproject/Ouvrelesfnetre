@@ -10,8 +10,9 @@
   weekend_start 10:00; close reminders 10:00-20:00. requests/RuntimeError per home = ::warning::, exit 0.
 - Workflow: cron `7,37 0,14-23 * * *`, pytest only on workflow_dispatch, state push retried 3x then ::warning::.
 - 39 tests pass. Manual run 45767321347 green, state commit pushed by the bot.
-- OPEN: no HOMES_KEY / MAIN_LAT / MAIN_LON secret on the repo -> main home "no location set", nothing is sent.
-  Owner sets HOMES_KEY (never ask for or print it). skill/lambda/alert.py rebuilt -> redeploy in the Alexa console Code tab.
+- HOMES_KEY secret set 2026-11-26 (MAIN_LAT/LON not needed). Reading is forgiving (quotes, \n, CRLF, bare base64)
+  and the log names the failure (unreadable / public key / doesn't match docs/lock.js). Run 45769891363: test sent to main.
+- OPEN: skill/lambda/alert.py rebuilt -> redeploy in the Alexa console Code tab.
 
 ## LATEST (2026-10-22, main @ b029aeb)
 Multi-home release is live.
