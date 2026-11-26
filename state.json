@@ -1,6 +1,10 @@
 {
-  "day": "2026-10-22",
-  "open": false,
-  "last_alert": "",
-  "heartbeat": "2026-10-22"
+  "heartbeat": "2026-11-26",
+  "homes": {
+    "main": {
+      "day": "2026-10-22",
+      "open": false,
+      "last_alert": ""
+    }
+  }
 }
