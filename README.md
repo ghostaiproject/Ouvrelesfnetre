@@ -33,7 +33,7 @@ This repo checks every home with its own local weather; other homes never touch 
    French first, English button. They type a name, pick their town, enable the "Notify Me" Alexa skill
    and paste its code. The page gives them a locked code (`olf1:...`) to send back to you.
 2. Add it as one new line in `homes.txt` (or hand it to Claude to add). No secret needed: only
-   `HOMES_KEY` can open it, so the file is safe in public. Old `HOME_` secrets still work.
+   `HOMES_KEY` can open it, so the file is safe in public. Old `HOME_` secrets are no longer read unless named in the workflow (see its comment).
 3. Test it: Actions > window-alert > Run workflow, type their name (`chalet`) in the home box. `all` tests every home.
 - To remove a home, delete its line in `homes.txt` (or its old secret). A broken code is skipped (see the run log), the other homes keep working.
 - Each home gets the same rules and times as yours, in its own time zone. Codes never show in the logs.
@@ -44,11 +44,11 @@ phone push through the free ntfy app, joke included. Optional: MacroDroid reads 
 1. Send them the main link; they tap "No Echo? Your phone" (or send `.../Ouvrelesfnetre/phone.html` directly).
    They type a name, pick their town, install ntfy, tap "Subscribe in ntfy", tap Test, then send you the message.
 2. Their message has a locked code: add it as a line in `homes.txt`, same as Echo homes.
-   Old `PHONE_` secrets still work.
+   Old `PHONE_` secrets: same, name them in the workflow or re-add the home as a homes.txt line.
 3. Test: Actions > window-alert > Run workflow, home = `chalet` (or `p-chalet`).
 - Same rules, times and jokes as Echo homes, in their own language and time zone, worded for speech ("19 degrees").
 - The ntfy topic in their code is the only key to their alerts: keep it private (it's masked in logs).
-- Old `GHOME_` secrets (first name of this) still work.
+- Old `GHOME_` secrets (first name of this): same as old `PHONE_` secrets.
 
 ## Notes
 - Privacy: the repo and its logs are public, so every home except yours ("main") shows up only as a

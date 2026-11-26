@@ -42,7 +42,10 @@ jobs:
           VOICEMONKEY_DEVICE: ${{ secrets.VOICEMONKEY_DEVICE }}
           NOTIFYME_ACCESS_CODE: ${{ secrets.NOTIFYME_ACCESS_CODE }}
           TEST_HOME: ${{ inputs.home }}
-          ALL_SECRETS: ${{ toJSON(secrets) }}   # every HOME_<NAME> (Echo) / PHONE_<NAME> (phone) secret = one more home
+          # No toJSON(secrets) here: passing every secret made GitHub flag this workflow as
+          # possibly malicious and hold every run for approval (2026-10-27 to 2026-11-24).
+          # Homes live in homes.txt; an old HOME_/PHONE_ secret must be named explicitly, e.g.
+          # ALL_SECRETS: '{"HOME_CONDO": ${{ toJSON(secrets.HOME_CONDO) }}}'
         run: python alert.py
       - name: Save state
         if: always()   # other homes' state still saves if one home failed
