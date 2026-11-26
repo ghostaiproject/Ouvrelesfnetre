@@ -502,6 +502,8 @@ def test_homes_key_paste_mistakes_are_tolerated_or_explained(tmp_path, monkeypat
     monkeypatch.setattr(alert, "HOMES_FILE", f)
     messy = '"  ' + pem.replace("\n", "\r\n  \n  ") + '  "'   # quotes, CRLF, indents, blank lines
     assert alert.load_locked({"HOMES_KEY": messy})[0] == (45.5, -73.57)
+    bare = "".join(l for l in pem.splitlines() if not l.startswith("-----"))   # no BEGIN/END lines
+    assert alert.load_locked({"HOMES_KEY": bare})[0] == (45.5, -73.57)
     assert alert.load_locked({"HOMES_KEY": "not a key"}) == (None, {})
     assert "not a readable private key" in capsys.readouterr().out
     _, other = _keys()   # a real key, but not the site's: the lock.js check names that case

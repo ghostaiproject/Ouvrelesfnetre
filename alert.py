@@ -209,9 +209,17 @@ HOMES_FILE = Path(__file__).with_name("homes.txt")
 
 def _read_key(raw: str):
     """HOMES_KEY as pasted into GitHub: tolerate quotes, literal \\n, indents, blank lines, CRLF."""
+    import base64
+
     from cryptography.hazmat.primitives import serialization
     pem = raw.strip().strip("\"'").replace("\\n", "\n")
     pem = "\n".join(l.strip() for l in pem.splitlines() if l.strip()) + "\n"
+    if "PUBLIC KEY" in pem:
+        raise ValueError("public key pasted")
+    if "-----BEGIN" not in pem:   # bare base64 (DER) with no BEGIN/END lines
+        body = "".join(pem.split())
+        der = base64.b64decode(body.replace("-", "+").replace("_", "/") + "=" * (-len(body) % 4))
+        return serialization.load_der_private_key(der, password=None)
     return serialization.load_pem_private_key(pem.encode(), password=None)
 
 
@@ -258,8 +266,10 @@ def load_locked(env=os.environ, path=None) -> tuple:
         return None, {}
     try:
         pem = _read_key(raw)
-    except Exception:  # noqa: BLE001  (never print the key)
-        print("::warning::HOMES_KEY is not a readable private key: paste the whole PEM, "
+    except Exception as e:  # noqa: BLE001  (never print the key)
+        hint = ("it's the PUBLIC key; HOMES_KEY needs the PRIVATE one" if "public" in str(e)
+                else f"{len(raw.strip())} chars, starts with -----BEGIN: {raw.strip().startswith('-----BEGIN')}")
+        print(f"::warning::HOMES_KEY is not a readable private key ({hint}): paste the whole PEM, "
               "-----BEGIN PRIVATE KEY----- to -----END PRIVATE KEY-----, no password.")
         return None, {}
     if _key_matches_site(pem) is False:
